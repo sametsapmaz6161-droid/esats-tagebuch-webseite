@@ -262,6 +262,10 @@ body {
 .bildgruppe { margin: 12px 0 20px; break-inside: avoid; }
 .bildgruppe .tagebuchbild { margin: 0 auto 8px; }
 .bildgruppe .bildunterschrift { margin: 0 !important; font-size: 11px !important; line-height: 1.4; }
+.tagesabschluss { margin-top: 20px; margin-bottom: 14px; }
+.tagesabschluss p { margin: 0 0 12px; }
+.tagesabschluss .unterschrift { text-align: right; font-size: clamp(14px, 1.2vw, 19px); font-style: italic; color: #9a5760; margin: 0; }
+
 
 /* BUCHMITTE */
 
@@ -3534,18 +3538,26 @@ function blockHTML(block) {
   if (block.typ === "bild") {
     const quelle = htmlSicher(block.datei);
     const alt = htmlSicher(block.alt || "");
-
     const groesse = bildDimensionen.get(block.datei);
-    const dimensionen = groesse
-      ? `width="${groesse.breite}" height="${groesse.hoehe}"`
-      : "";
-
+    // Explizite Pixelabmessungen machen die Seitenmessung deterministisch.
+    // Keine Verzerrung, keine Verkleinerung nur wegen verbleibender Resthöhe.
+    const stil = getComputedStyle(messinhalt);
+    const platz = messinhalt.clientWidth -
+      (parseFloat(stil.paddingLeft) || 0) -
+      (parseFloat(stil.paddingRight) || 0);
+    const maximalHoehe = window.innerWidth <= 650 ? 160 : 300;
+    let dimensionen = "";
+    if (groesse && groesse.breite > 0 && groesse.hoehe > 0) {
+      const faktor = Math.min(1, platz / groesse.breite, maximalHoehe / groesse.hoehe);
+      const breite = Math.floor(groesse.breite * faktor);
+      const hoehe = Math.floor(groesse.hoehe * faktor);
+      dimensionen = `width="${breite}" height="${hoehe}" style="width:${breite}px;height:${hoehe}px"`;
+    }
     const beschriftung = block.bildunterschrift
       ? `<p class="bildunterschrift">${htmlSicher(block.bildunterschrift)}</p>`
       : "";
     return `<div class="bildgruppe"><img class="tagebuchbild" src="${quelle}" alt="${alt}" ${dimensionen}>${beschriftung}</div>`;
   }
-
   return `<p>${htmlSicher(block.text)}</p>`;
 }
 
@@ -3591,19 +3603,23 @@ function messbereichAnpassen() {
 function passtAufSeite(html) {
   messinhalt.innerHTML = html;
   const elemente = [...messinhalt.children];
-  if (elemente.length === 0) return true;
+  if (!elemente.length) return true;
 
-  const letztes = elemente[elemente.length - 1];
+  const rahmen = messinhalt.getBoundingClientRect();
   const stil = getComputedStyle(messinhalt);
-  const letzterStil = getComputedStyle(letztes);
-  const unterkante = messinhalt.getBoundingClientRect().bottom;
   const paddingUnten = parseFloat(stil.paddingBottom) || 0;
-  const marginUnten = parseFloat(letzterStil.marginBottom) || 0;
-  const inhaltUnterkante = letztes.getBoundingClientRect().bottom;
-  const sicherheitsabstand = 18;
+  // Genug Abstand zur Seitenzahl und zum unteren Buchrand.
+  const grenze = rahmen.bottom - paddingUnten - 42;
 
-  return inhaltUnterkante + marginUnten <=
-    unterkante - paddingUnten - sicherheitsabstand;
+  // Auch verschachtelte Elemente (Bilder UND Bildunterschriften) prüfen.
+  // Das verhindert, dass eine Bildgruppe über den Seitenrand ragt.
+  for (const el of messinhalt.querySelectorAll('*')) {
+    const r = el.getBoundingClientRect();
+    const cs = getComputedStyle(el);
+    const margin = parseFloat(cs.marginBottom) || 0;
+    if (r.bottom + margin > grenze + 0.5) return false;
+  }
+  return true;
 }
 
 /*
@@ -3649,98 +3665,61 @@ function textAufteilen(text, kopf, bisher) {
 
 function eintragAufteilen(eintrag) {
   const ergebnis = [];
-
   let kopf = kopfHTML(eintrag, false);
   let inhalt = "";
 
   function seiteAbschliessen() {
-    ergebnis.push(kopf + inhalt);
-
+    if (inhalt) ergebnis.push(kopf + inhalt);
     kopf = kopfHTML(eintrag, true);
     inhalt = "";
   }
 
-  for (const block of eintrag.inhalt) {
+  // Den bisherigen Abschiedsgruß entfernen und nach dem letzten Bild
+  // zusammen mit der Unterschrift wieder anfügen.
+  const bloecke = eintrag.inhalt.filter(block =>
+    !(block.typ === "text" && /^Bis morgen, liebes Tagebuch\.?$/i.test(block.text.trim()))
+  );
 
-    /* BILD */
-
+  for (const block of bloecke) {
     if (block.typ === "bild") {
       const bild = blockHTML(block);
-
-      if (
-        passtAufSeite(kopf + inhalt + bild)
-      ) {
-        inhalt += bild;
-      } else {
-        // Bild auf die nächste Seite verschieben
-
-        seiteAbschliessen();
-        inhalt += bild;
+      if (!passtAufSeite(kopf + inhalt + bild)) {
+        if (inhalt) seiteAbschliessen();
       }
-
+      inhalt += bild;
       continue;
     }
 
-    /* TEXT */
-
     let restText = block.text.trim();
-
     while (restText.length > 0) {
-      const ganzerAbsatz =
-        `<p>${htmlSicher(restText)}</p>`;
-
-      if (
-        passtAufSeite(
-          kopf + inhalt + ganzerAbsatz
-        )
-      ) {
+      const ganzerAbsatz = `<p>${htmlSicher(restText)}</p>`;
+      if (passtAufSeite(kopf + inhalt + ganzerAbsatz)) {
         inhalt += ganzerAbsatz;
         restText = "";
         break;
       }
-
-      const teilung = textAufteilen(
-        restText,
-        kopf,
-        inhalt
-      );
-
+      const teilung = textAufteilen(restText, kopf, inhalt);
       if (teilung.passend) {
-        inhalt +=
-          `<p>${htmlSicher(teilung.passend)}</p>`;
-
+        inhalt += `<p>${htmlSicher(teilung.passend)}</p>`;
         restText = teilung.rest;
-
+        if (restText) seiteAbschliessen();
+      } else if (inhalt) {
         seiteAbschliessen();
       } else {
-        if (inhalt) {
-          seiteAbschliessen();
-        } else {
-          /*
-            Schutz vor Endlosschleifen
-            bei sehr kleinen Buchseiten.
-          */
-
-          const erstesWort =
-            restText.split(/\s+/)[0];
-
-          inhalt +=
-            `<p>${htmlSicher(erstesWort)}</p>`;
-
-          restText = restText
-            .slice(erstesWort.length)
-            .trim();
-
-          seiteAbschliessen();
-        }
+        const erstesWort = restText.split(/\s+/)[0];
+        inhalt += `<p>${htmlSicher(erstesWort)}</p>`;
+        restText = restText.slice(erstesWort.length).trim();
+        if (restText) seiteAbschliessen();
       }
     }
   }
 
-  if (inhalt || ergebnis.length === 0) {
-    ergebnis.push(kopf + inhalt);
+  const abschluss = `<div class="tagesabschluss"><p>Bis morgen, liebes Tagebuch.</p><p class="unterschrift">In Liebe, Esat ♡</p></div>`;
+  if (!passtAufSeite(kopf + inhalt + abschluss) && inhalt) {
+    seiteAbschliessen();
   }
-
+  inhalt += abschluss;
+  if (inhalt || ergebnis.length === 0) ergebnis.push(kopf + inhalt);
   return ergebnis;
 }
 
