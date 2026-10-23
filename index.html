@@ -503,6 +503,31 @@ body {
 }
 @media(max-width:650px) { .videozeichnung {height:85px;} }
 
+
+/* HANDGEZEICHNETES KAPITELREGISTER */
+.kapitel-auswahl { position: relative; }
+.kapitel-register[hidden] { display: none !important; }
+.kapitel-register {
+  position: absolute; bottom: calc(100% + 15px); left: 0;
+  width: min(400px, 88vw); max-height: min(65dvh, 560px);
+  display: flex; flex-direction: column; overflow: hidden;
+  padding: 16px; background: #fbf1db; color: #714322;
+  border: 2px solid #806247; border-radius: 7px 12px 6px 10px;
+  box-shadow: 3px 5px 0 #ac9071, 0 16px 35px #0008;
+  transform: rotate(-.5deg);
+}
+.register-kopf { display: flex; align-items: center; justify-content: space-between; font-size: 19px; padding: 0 2px 12px; border-bottom: 1px dashed #ad9378; }
+.steuerung .register-x { background: none; color: #714322; border: 0; font-size: 25px; padding: 0 6px; }
+.register-liste { overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 12px 3px 3px; }
+.steuerung .register-eintrag {
+  display: block; text-align: left; background: transparent; color: #714322;
+  border: 1px dashed #b49a7b; border-radius: 3px 7px 4px 6px;
+  padding: 10px 9px; font: 14px Georgia,serif; line-height: 1.3;
+}
+.steuerung .register-eintrag:hover, .steuerung .register-eintrag.aktiv { background: #ead9b9; color: #50321d; border-color: #806247; }
+.steuerung .register-eintrag:focus-visible { outline: 2px solid #714322; outline-offset: 2px; }
+@media(max-width:650px) { .kapitel-register { left: -3px; width: min(340px, 90vw); max-height: 55dvh; } .register-liste { gap: 4px; } .steuerung .register-eintrag { font-size: 12px; padding: 8px 6px; } }
+
 </style>
 </head>
 
@@ -620,12 +645,13 @@ body {
 
   <div class="steuerung">
 
-    <button
-      id="zurueckButton"
-      onclick="zurueckblattern()"
-    >
-      ← Zurückblättern
-    </button>
+    <div class="kapitel-auswahl" id="kapitelAuswahl">
+      <button type="button" id="kapitelButton" onclick="kapitelRegisterUmschalten()" aria-expanded="false" aria-controls="kapitelRegister">☷ Kapitel wählen</button>
+      <div class="kapitel-register" id="kapitelRegister" aria-label="Kapitelübersicht" hidden>
+        <div class="register-kopf">✎ Inhaltsverzeichnis <button type="button" class="register-x" onclick="kapitelRegisterSchliessen()" aria-label="Register schließen">×</button></div>
+        <div class="register-liste" id="kapitelListe"></div>
+      </div>
+    </div>
 
     <button onclick="lesemodusSchliessen()">
       ✕ Schließen
@@ -683,8 +709,10 @@ const blatt = document.getElementById("blatt");
 const blattVorne = document.getElementById("blattVorne");
 const blattHinten = document.getElementById("blattHinten");
 
-const zurueckButton =
-  document.getElementById("zurueckButton");
+const kapitelButton = document.getElementById("kapitelButton");
+const kapitelRegister = document.getElementById("kapitelRegister");
+const kapitelListe = document.getElementById("kapitelListe");
+let kapitelStartseiten = [];
 
 const messbereich =
   document.getElementById("messbereich");
@@ -3961,7 +3989,9 @@ function alleSeitenBerechnen() {
     }
   ];
 
+  kapitelStartseiten = [];
   for (const eintrag of eintraege) {
+    kapitelStartseiten.push(neueSeiten.length);
     const teile = eintragAufteilen(eintrag);
 
     for (const teil of teile) {
@@ -3973,6 +4003,7 @@ function alleSeitenBerechnen() {
   }
 
   seiten = neueSeiten;
+  kapitelRegisterFuellen();
 }
 
 /* SEITENINHALT */
@@ -4042,8 +4073,7 @@ function seitenAnzeigen() {
   rechteSeite.innerHTML =
     seitenHTML(rechtsIndex);
 
-  zurueckButton.disabled =
-    aktuelleDoppelseite === 0;
+  kapitelAktivMarkieren();
 }
 
 /*
@@ -4140,6 +4170,7 @@ async function lesemodusOeffnen() {
 /* LESEMODUS SCHLIESSEN */
 
 function lesemodusSchliessen() {
+  kapitelRegisterSchliessen();
   if (animationLaeuft) {
     return;
   }
@@ -4322,6 +4353,63 @@ window.addEventListener("resize", () => {
   }, 250);
 });
 
+
+
+/* DIREKTE KAPITELAUSWAHL */
+function kapitelRegisterFuellen() {
+  if (!kapitelListe) return;
+  kapitelListe.replaceChildren();
+  eintraege.forEach((eintrag, index) => {
+    const taste = document.createElement("button");
+    taste.type = "button";
+    taste.className = "register-eintrag";
+    taste.dataset.kapitel = String(index);
+    taste.textContent = eintrag.titel || `Kapitel ${index + 1}`;
+    taste.title = taste.textContent;
+    taste.addEventListener("click", () => kapitelSpringen(index));
+    kapitelListe.appendChild(taste);
+  });
+  kapitelAktivMarkieren();
+}
+function kapitelAktivMarkieren() {
+  if (!kapitelListe) return;
+  const seitenindex = linkeIndex(aktuelleDoppelseite);
+  let aktiv = -1;
+  kapitelStartseiten.forEach((start, i) => { if (start <= seitenindex + 1) aktiv = i; });
+  kapitelListe.querySelectorAll(".register-eintrag").forEach((taste, i) => {
+    taste.classList.toggle("aktiv", i === aktiv);
+    if (i === aktiv) taste.setAttribute("aria-current", "true");
+    else taste.removeAttribute("aria-current");
+  });
+}
+function kapitelRegisterUmschalten() {
+  if (animationLaeuft) return;
+  const oeffnen = kapitelRegister.hidden;
+  kapitelRegister.hidden = !oeffnen;
+  kapitelButton.setAttribute("aria-expanded", String(oeffnen));
+  if (oeffnen) kapitelRegister.querySelector(".register-eintrag.aktiv")?.scrollIntoView({block:"nearest"});
+}
+function kapitelRegisterSchliessen() {
+  kapitelRegister.hidden = true;
+  kapitelButton.setAttribute("aria-expanded", "false");
+}
+function kapitelSpringen(index) {
+  if (animationLaeuft || !kapitelStartseiten[index]) return;
+  aktuelleDoppelseite = Math.floor(kapitelStartseiten[index] / 2);
+  kapitelRegisterSchliessen();
+  blatt.style.display = "none";
+  abdeckungLinks.style.display = "none";
+  abdeckungRechts.style.display = "none";
+  seitenAnzeigen();
+}
+document.addEventListener("click", event => {
+  if (!event.target.closest("#kapitelAuswahl")) kapitelRegisterSchliessen();
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !kapitelRegister.hidden) {
+    kapitelRegisterSchliessen(); kapitelButton.focus();
+  }
+});
 
 /* GROSSANSICHT: Bild anklicken, Escape oder außerhalb klicken zum Schließen */
 const bildLupe = document.getElementById("bildLupe");
