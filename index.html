@@ -783,11 +783,6 @@ function messbereichAnpassen() {
 function passtAufSeite(html) {
   messinhalt.innerHTML = html;
 
-  const stil = getComputedStyle(messinhalt);
-
-  const paddingUnten =
-    parseFloat(stil.paddingBottom);
-
   const elemente = [...messinhalt.children];
 
   if (elemente.length === 0) {
@@ -796,16 +791,21 @@ function passtAufSeite(html) {
 
   const letztes = elemente[elemente.length - 1];
 
-  const seitenUnterkante =
+  const stil = getComputedStyle(messinhalt);
+
+  const unterkante =
     messinhalt.getBoundingClientRect().bottom;
+
+  const paddingUnten =
+    parseFloat(stil.paddingBottom) || 0;
 
   const inhaltUnterkante =
     letztes.getBoundingClientRect().bottom;
 
-  const sicherheitsabstand = 22;
+  const sicherheitsabstand = 18;
 
   return inhaltUnterkante <=
-    seitenUnterkante -
+    unterkante -
     paddingUnten -
     sicherheitsabstand;
 }
@@ -813,10 +813,9 @@ function passtAufSeite(html) {
 /*
   TEXT AUTOMATISCH AUFTEILEN
 
-  Möglichst viel Text auf der Seite
-  unterbringen. Satzenden werden nur
-  bevorzugt, wenn höchstens eine
-  Textzeile dadurch verloren geht.
+  Möglichst viele Wörter auf der Seite
+  unterbringen, ohne zusätzliche
+  Satzende-Regel.
 */
 
 function textAufteilen(text, kopf, bisher) {
@@ -825,8 +824,6 @@ function textAufteilen(text, kopf, bisher) {
   let links = 0;
   let rechts = woerter.length;
   let besteAnzahl = 0;
-
-  // Maximale Anzahl passender Wörter finden
 
   while (links <= rechts) {
     const mitte = Math.floor(
@@ -850,77 +847,13 @@ function textAufteilen(text, kopf, bisher) {
     }
   }
 
-  if (besteAnzahl === 0) {
-    return {
-      passend: "",
-      rest: text
-    };
-  }
-
-  let trennstelle = besteAnzahl;
-
-  // Höhe des maximal passenden Textes messen
-
-  const vollerText = woerter
-    .slice(0, besteAnzahl)
-    .join(" ");
-
-  messinhalt.innerHTML =
-    kopf +
-    bisher +
-    `<p>${htmlSicher(vollerText)}</p>`;
-
-  const vollerAbsatz =
-    messinhalt.lastElementChild;
-
-  const vollerHoehe =
-    vollerAbsatz.getBoundingClientRect().bottom;
-
-  // Zeilenhöhe direkt am Absatz ermitteln
-
-  const zeilenhoehe = parseFloat(
-    getComputedStyle(vollerAbsatz).lineHeight
-  );
-
-  // Nur nahegelegene Satzenden berücksichtigen
-
-  for (let i = besteAnzahl; i > 0; i--) {
-    if (
-      !/[.!?]["'»“”)]?$/.test(woerter[i - 1])
-    ) {
-      continue;
-    }
-
-    const teil = woerter
-      .slice(0, i)
-      .join(" ");
-
-    messinhalt.innerHTML =
-      kopf +
-      bisher +
-      `<p>${htmlSicher(teil)}</p>`;
-
-    const aktuelleHoehe =
-      messinhalt.lastElementChild
-        .getBoundingClientRect().bottom;
-
-    if (
-      vollerHoehe - aktuelleHoehe <=
-      zeilenhoehe
-    ) {
-      trennstelle = i;
-    }
-
-    break;
-  }
-
   return {
     passend: woerter
-      .slice(0, trennstelle)
+      .slice(0, besteAnzahl)
       .join(" "),
 
     rest: woerter
-      .slice(trennstelle)
+      .slice(besteAnzahl)
       .join(" ")
   };
 }
@@ -957,7 +890,7 @@ function eintragAufteilen(eintrag) {
       ) {
         inhalt += bild;
       } else {
-        // Bild auf die nächste Seite verschieben
+        // Bild vollständig auf die nächste Seite
 
         seiteAbschliessen();
         inhalt += bild;
