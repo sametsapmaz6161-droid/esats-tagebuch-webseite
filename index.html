@@ -15,7 +15,7 @@
     margin: 0;
     overflow: hidden;
     background: #160d0a;
-    font-family: Georgia, serif;
+    font-family: Georgia, "Times New Roman", serif;
   }
 
   /* STARTSEITE */
@@ -57,8 +57,8 @@
     top: 16%;
     width: 37%;
     height: 67%;
-    background: transparent;
     border: none;
+    background: transparent;
     cursor: pointer;
   }
 
@@ -74,9 +74,7 @@
   }
 
   @keyframes pulsieren {
-    50% {
-      opacity: .45;
-    }
+    50% { opacity: .45; }
   }
 
   .seitenklick {
@@ -109,8 +107,6 @@
     opacity: 1;
   }
 
-  /* VERSCHWOMMENER SCHREIBTISCH */
-
   .blur-hintergrund {
     position: absolute;
     inset: -25px;
@@ -119,7 +115,7 @@
     transform: scale(1.05);
   }
 
-  /* BUCHGRÖSSE: 90 % HÖHE */
+  /* BUCH */
 
   .buch {
     position: relative;
@@ -127,87 +123,109 @@
     width: min(92vw, 1600px);
     height: 90dvh;
     display: flex;
+    perspective: 2400px;
     filter: drop-shadow(0 25px 35px #000a);
     transform: scale(.85);
     transition: transform .8s ease;
-    perspective: 2200px;
   }
 
   .lesemodus.aktiv .buch {
     transform: scale(1);
   }
 
-  /* GEMEINSAME BUCHSEITEN */
+  /* PAPIERFARBEN AUS DEM SCREENSHOT */
+
+  :root {
+    --papier: #fbf1db;
+    --schrift: #714322;
+    --rand: #bda17a;
+  }
+
+  .papier {
+    background-color: var(--papier);
+    background-image:
+      radial-gradient(
+        ellipse at 35% 20%,
+        rgba(255,255,255,.20),
+        transparent 70%
+      ),
+      linear-gradient(
+        90deg,
+        rgba(100,70,40,.055),
+        transparent 12%,
+        transparent 90%,
+        rgba(100,70,40,.035)
+      );
+  }
+
+  /* SICHTBARE BUCHSEITEN */
 
   .buchseite {
     position: relative;
     width: 50%;
     height: 100%;
-    color: #49392f;
-    padding: clamp(20px, 3vw, 52px);
     overflow: hidden;
+    color: var(--schrift);
   }
-
-  /* LINKE SEITE: STECKBRIEF BLEIBT UNVERÄNDERT */
 
   .links {
     border-radius: 14px 2px 2px 14px;
-    box-shadow: inset -22px 0 28px -25px #43240e;
+    box-shadow: inset -20px 0 25px -22px #43240e;
   }
-
-  .steckbrief-seite {
-    background-image: url("steckbrief.png");
-    background-size: 100% 100%;
-    background-position: center;
-    background-repeat: no-repeat;
-    padding: 0;
-  }
-
-  /* NEUES CREMEWEISSES PAPIER */
-
-  .papier {
-    background-color: #f7f0df;
-    background-image:
-      radial-gradient(
-        ellipse at 45% 25%,
-        rgba(255, 255, 255, 0.34),
-        transparent 65%
-      ),
-      repeating-linear-gradient(
-        0deg,
-        rgba(113, 87, 59, 0.012) 0px,
-        rgba(113, 87, 59, 0.012) 1px,
-        transparent 1px,
-        transparent 5px
-      ),
-      linear-gradient(
-        90deg,
-        rgba(99, 69, 41, 0.075),
-        transparent 12%,
-        transparent 88%,
-        rgba(99, 69, 41, 0.045)
-      );
-  }
-
-  /* RECHTE BUCHSEITE */
 
   .rechts {
     border-radius: 2px 14px 14px 2px;
-    box-shadow:
-      inset 22px 0 28px -25px #43240e,
-      inset -8px 0 18px -16px #43240e;
+    box-shadow: inset 20px 0 25px -22px #43240e;
   }
 
-  .buchseite h1 {
-    text-align: center;
-    font-size: clamp(22px, 2.7vw, 40px);
-    margin-bottom: 35px;
-    color: #463429;
+  .steckbrief-seite {
+    background: url("steckbrief.png") center / 100% 100% no-repeat;
   }
 
-  .buchseite p {
-    font-size: clamp(14px, 1.4vw, 20px);
-    line-height: 1.8;
+  /* INHALT DER TAGEBUCHSEITEN */
+
+  .seiteninhalt {
+    height: 100%;
+    overflow: hidden;
+    padding: clamp(22px, 3.1vw, 52px);
+    color: var(--schrift);
+  }
+
+  .seiteninhalt h2 {
+    font-size: clamp(19px, 2vw, 29px);
+    font-weight: normal;
+    line-height: 1.4;
+    margin: 0 0 30px;
+  }
+
+  .seiteninhalt p {
+    font-size: clamp(15px, 1.42vw, 21px);
+    line-height: 1.85;
+    margin: 0 0 24px;
+    overflow-wrap: break-word;
+  }
+
+  .seiteninhalt .datum {
+    display: block;
+    margin-bottom: 24px;
+    font-size: clamp(12px, 1vw, 15px);
+    letter-spacing: .04em;
+    opacity: .7;
+  }
+
+  .seiteninhalt .seitenzahl {
+    position: absolute;
+    bottom: 18px;
+    font-size: 13px;
+    opacity: .55;
+  }
+
+  .rechts .seitenzahl {
+    right: 30px;
+  }
+
+  .links .seitenzahl {
+    left: 30px;
   }
 
   /* BUCHMITTE */
@@ -216,19 +234,19 @@
     position: absolute;
     top: 0;
     left: calc(50% - 8px);
-    height: 100%;
     width: 16px;
+    height: 100%;
     background: linear-gradient(
       90deg,
       #67432477,
       #2b160c77,
       #67432455
     );
-    z-index: 5;
+    z-index: 12;
     pointer-events: none;
   }
 
-  /* UMBLÄTTERBARES BLATT */
+  /* ANIMIERTES BLATT */
 
   .blatt {
     position: absolute;
@@ -238,9 +256,10 @@
     height: 100%;
     transform-origin: left center;
     transform-style: preserve-3d;
-    transition: transform 1.2s ease-in-out;
-    z-index: 6;
-    cursor: pointer;
+    transition: transform 1.15s cubic-bezier(.45,.05,.3,1);
+    z-index: 10;
+    display: none;
+    pointer-events: none;
   }
 
   .blatt.umgeblattert {
@@ -250,44 +269,38 @@
   .blattseite {
     position: absolute;
     inset: 0;
+    overflow: hidden;
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     border-radius: 2px 12px 12px 2px;
-    padding: clamp(20px, 3vw, 52px);
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    color: #49392f;
-    text-align: center;
-
-    box-shadow:
-      inset 14px 0 25px -22px #321b0d,
-      inset -7px 0 15px -14px #321b0d;
+    box-shadow: inset 16px 0 25px -22px #321b0d;
   }
 
   .blattseite.rueck {
     transform: rotateY(180deg);
     border-radius: 12px 2px 2px 12px;
+    box-shadow: inset -16px 0 25px -22px #321b0d;
   }
 
-  .blattseite h2 {
-    font-size: clamp(24px, 3vw, 44px);
-    font-weight: normal;
-    color: #463429;
-    margin-bottom: 12px;
+  /* KLICKBEREICHE */
+
+  .klickbereich {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 50%;
+    z-index: 15;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
   }
 
-  .blattseite p {
-    font-size: clamp(14px, 1.4vw, 20px);
-    line-height: 1.8;
+  .klickbereich.vor {
+    right: 0;
   }
 
-  .blattseite small {
-    margin-top: 28px;
-    opacity: .65;
-    font-style: italic;
+  .klickbereich.zurueck {
+    left: 0;
   }
 
   /* STEUERUNG */
@@ -315,6 +328,11 @@
     background: #593628;
   }
 
+  .steuerung button:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+  }
+
   /* MOBILE ANSICHT */
 
   @media (max-width: 650px) {
@@ -323,17 +341,24 @@
       height: 75dvh;
     }
 
-    .buchseite,
-    .blattseite {
-      padding: 12px;
+    .seiteninhalt {
+      padding: 13px;
     }
 
-    .steckbrief-seite {
-      padding: 0;
+    .seiteninhalt h2 {
+      font-size: 16px;
+      margin-bottom: 14px;
+    }
+
+    .seiteninhalt p {
+      font-size: 11px;
+      line-height: 1.55;
+      margin-bottom: 12px;
     }
 
     .steuerung button {
       padding: 9px 12px;
+      font-size: 12px;
     }
   }
 </style>
@@ -344,7 +369,6 @@
 <main class="szene">
   <div class="bildbereich">
 
-    <!-- GESCHLOSSENES TAGEBUCH -->
     <img
       id="startbild"
       class="hintergrund"
@@ -352,7 +376,6 @@
       alt="Geschlossenes Tagebuch"
     >
 
-    <!-- BUCHÖFFNUNGSANIMATION -->
     <video
       id="buchvideo"
       class="video"
@@ -362,7 +385,6 @@
       <source src="buch-oeffnen.mp4" type="video/mp4">
     </video>
 
-    <!-- GEÖFFNETES TAGEBUCH -->
     <img
       id="offenesbuch"
       class="offenes-buch"
@@ -370,7 +392,6 @@
       alt="Geöffnetes Tagebuch"
     >
 
-    <!-- BUCH ÖFFNEN -->
     <button
       id="buchbutton"
       class="buchbutton"
@@ -382,7 +403,6 @@
       Klicke auf das Tagebuch 📖
     </div>
 
-    <!-- LESEMODUS STARTEN -->
     <button
       id="seitenklick"
       class="seitenklick"
@@ -401,52 +421,61 @@
   aria-label="Tagebuch Lesemodus"
 >
 
-  <!-- VERSCHWOMMENER HINTERGRUND -->
   <div class="blur-hintergrund"></div>
 
-  <!-- GROSSES TAGEBUCH -->
   <div class="buch">
 
-    <!-- LINKE SEITE: STECKBRIEF -->
-    <div class="buchseite links steckbrief-seite"></div>
+    <!-- LINKE SEITE -->
+    <div
+      id="linkeSeite"
+      class="buchseite links steckbrief-seite"
+    ></div>
 
-    <!-- RECHTE SEITE: CREMEWEISSES PAPIER -->
-    <div class="buchseite rechts papier">
-      <h1>Tag 01</h1>
-      <p>Hier beginnt Esats Geschichte ...</p>
+    <!-- RECHTE SEITE -->
+    <div
+      id="rechteSeite"
+      class="buchseite rechts papier"
+    ></div>
+
+    <!-- ANIMIERTES BLATT -->
+    <div id="blatt" class="blatt">
+
+      <div
+        id="blattVorne"
+        class="blattseite papier"
+      ></div>
+
+      <div
+        id="blattHinten"
+        class="blattseite rueck papier"
+      ></div>
+
     </div>
 
-    <!-- BUCHMITTE -->
     <div class="buchmitte"></div>
 
-    <!-- UMBLÄTTERBARES BLATT -->
-    <div
-      id="blatt"
-      class="blatt"
-      onclick="umblattern()"
-    >
+    <!-- KLICK ZURÜCK -->
+    <button
+      class="klickbereich zurueck"
+      onclick="zurueckblattern()"
+      aria-label="Zurückblättern"
+    ></button>
 
-      <!-- VORDERSEITE -->
-      <div class="blattseite papier">
-        <h2>Tag 01</h2>
-        <p>Der Anfang einer besonderen Geschichte ...</p>
-        <small>Zum Umblättern klicken →</small>
-      </div>
-
-      <!-- RÜCKSEITE -->
-      <div class="blattseite rueck papier">
-        <h2>Seite 2</h2>
-        <p>Hier geht Esats Geschichte weiter ...</p>
-      </div>
-
-    </div>
+    <!-- KLICK VORWÄRTS -->
+    <button
+      class="klickbereich vor"
+      onclick="vorblattern()"
+      aria-label="Vorwärtsblättern"
+    ></button>
 
   </div>
 
-  <!-- STEUERUNG -->
   <div class="steuerung">
 
-    <button onclick="zurueck()">
+    <button
+      id="zurueckButton"
+      onclick="zurueckblattern()"
+    >
       ← Zurückblättern
     </button>
 
@@ -466,17 +495,150 @@
   const hinweis = document.getElementById("hinweis");
   const seitenklick = document.getElementById("seitenklick");
   const lesemodus = document.getElementById("lesemodus");
+
+  const linkeSeite = document.getElementById("linkeSeite");
+  const rechteSeite = document.getElementById("rechteSeite");
   const blatt = document.getElementById("blatt");
+  const blattVorne = document.getElementById("blattVorne");
+  const blattHinten = document.getElementById("blattHinten");
+  const zurueckButton = document.getElementById("zurueckButton");
+
+  let aktuelleDoppelseite = 0;
+  let animationLaeuft = false;
+
+  /*
+    TESTEINTRÄGE
+
+    Jeder Eintrag besitzt eine Überschrift,
+    ein Datum und den eigentlichen Tagebuchtext.
+
+    Die echten 30 Einträge fügen wir später ein.
+  */
+
+  const eintraege = [
+    {
+      datum: "Tag 01",
+      titel: "Sechs Jahre nach dem letzten Tagebucheintrag.",
+      text: [
+        "Liebes Tagebuch,",
+        "sechs Jahre. Sechs verdammte Jahre. So lange habe ich nicht mehr in dich geschrieben. Als ich dich heute in einer alten Umzugskiste gefunden habe, musste ich lachen. Auf der ersten Seite steht noch mein Name. Esat. 27 Jahre alt. Single. Weißer Audi TT. Auf der Suche nach der großen Liebe.",
+        "Was für ein Idiot. Damals dachte ich, das größte Problem meines Lebens wäre, ob Jessica mich wirklich liebt."
+      ]
+    },
+    {
+      datum: "Tag 02 – Testeintrag",
+      titel: "Ein neuer Morgen",
+      text: [
+        "Liebes Tagebuch,",
+        "heute beginnt ein neuer Abschnitt. Manchmal frage ich mich, wie viel sich in sechs Jahren verändern kann.",
+        "Vielleicht ist es an der Zeit, meine Geschichte wieder aufzuschreiben."
+      ]
+    },
+    {
+      datum: "Tag 03 – Testeintrag",
+      titel: "Alte Erinnerungen",
+      text: [
+        "Liebes Tagebuch,",
+        "manche Erinnerungen verschwinden nie vollständig. Sie warten nur darauf, wiederentdeckt zu werden.",
+        "Ich bin gespannt, was die nächsten Tage bringen."
+      ]
+    },
+    {
+      datum: "Tag 04 – Testeintrag",
+      titel: "Was morgen bringt",
+      text: [
+        "Liebes Tagebuch,",
+        "ich hätte nicht gedacht, dass ich wieder so regelmäßig schreiben würde.",
+        "Aber vielleicht hilft es mir, die Dinge klarer zu sehen."
+      ]
+    }
+  ];
+
+  /*
+    AUS EINTRÄGEN HTML ERZEUGEN
+  */
+
+  function eintragHTML(eintrag, seitenzahl) {
+    if (!eintrag) {
+      return "";
+    }
+
+    const abschnitte = eintrag.text
+      .map(absatz => `<p>${absatz}</p>`)
+      .join("");
+
+    return `
+      <div class="seiteninhalt">
+        <span class="datum">${eintrag.datum}</span>
+        <h2>${eintrag.titel}</h2>
+        ${abschnitte}
+        <span class="seitenzahl">${seitenzahl}</span>
+      </div>
+    `;
+  }
+
+  /*
+    DOPPELSEITEN:
+    0 = Steckbrief links, Tag 01 rechts
+    1 = Tag 02 links, Tag 03 rechts
+    2 = Tag 04 links, rechte Seite leer
+  */
+
+  function anzahlDoppelseiten() {
+    return Math.ceil((eintraege.length + 1) / 2);
+  }
+
+  function linkeHTML(index) {
+    if (index === 0) {
+      return null;
+    }
+
+    const eintragIndex = index * 2 - 1;
+    return eintragHTML(
+      eintraege[eintragIndex],
+      eintragIndex + 2
+    );
+  }
+
+  function rechteHTML(index) {
+    const eintragIndex = index * 2;
+
+    return eintragHTML(
+      eintraege[eintragIndex],
+      eintragIndex + 2
+    );
+  }
+
+  function seitenAnzeigen() {
+    if (aktuelleDoppelseite === 0) {
+      linkeSeite.className =
+        "buchseite links steckbrief-seite";
+      linkeSeite.innerHTML = "";
+    } else {
+      linkeSeite.className =
+        "buchseite links papier";
+      linkeSeite.innerHTML =
+        linkeHTML(aktuelleDoppelseite);
+    }
+
+    rechteSeite.className =
+      "buchseite rechts papier";
+
+    rechteSeite.innerHTML =
+      rechteHTML(aktuelleDoppelseite);
+
+    zurueckButton.disabled =
+      aktuelleDoppelseite === 0;
+  }
 
   /* BUCH ÖFFNEN */
 
   function buchOeffnen() {
     buchbutton.style.display = "none";
     hinweis.style.display = "none";
-
     startbild.style.display = "none";
-    video.style.display = "block";
 
+    video.style.display = "block";
     video.currentTime = 0;
 
     video.play().catch(() => {
@@ -484,17 +646,18 @@
     });
   }
 
-  /* NACH VIDEO DAS GEÖFFNETE BUCH ANZEIGEN */
-
   video.addEventListener("ended", () => {
     video.style.display = "none";
     offenesbuch.style.display = "block";
     seitenklick.style.display = "block";
   });
 
-  /* LESEMODUS ÖFFNEN */
+  /* LESEMODUS */
 
   function lesemodusOeffnen() {
+    aktuelleDoppelseite = 0;
+    seitenAnzeigen();
+
     lesemodus.style.display = "flex";
 
     requestAnimationFrame(() => {
@@ -502,9 +665,9 @@
     });
   }
 
-  /* LESEMODUS SCHLIESSEN */
-
   function lesemodusSchliessen() {
+    if (animationLaeuft) return;
+
     lesemodus.classList.remove("aktiv");
 
     setTimeout(() => {
@@ -512,17 +675,113 @@
     }, 600);
   }
 
-  /* SEITE UMBLÄTTERN */
+  /*
+    VORWÄRTSBLÄTTERN
 
-  function umblattern() {
-    blatt.classList.toggle("umgeblattert");
-  }
+    Das rechte Blatt dreht sich nach links.
+    Die Rückseite zeigt die nächste linke Seite.
+  */
 
-  /* ZURÜCKBLÄTTERN */
+  function vorblattern() {
+    if (animationLaeuft) return;
 
-  function zurueck() {
+    if (
+      aktuelleDoppelseite >=
+      anzahlDoppelseiten() - 1
+    ) {
+      return;
+    }
+
+    animationLaeuft = true;
+
+    const naechsteSeite =
+      aktuelleDoppelseite + 1;
+
+    blattVorne.innerHTML =
+      rechteHTML(aktuelleDoppelseite);
+
+    blattHinten.innerHTML =
+      linkeHTML(naechsteSeite);
+
+    /*
+      Darunter bereits die neuen Seiten anzeigen.
+      Das animierte Blatt verdeckt den Übergang.
+    */
+
+    aktuelleDoppelseite = naechsteSeite;
+    seitenAnzeigen();
+
+    blatt.style.display = "block";
     blatt.classList.remove("umgeblattert");
+    blatt.style.transition = "none";
+
+    void blatt.offsetWidth;
+
+    blatt.style.transition =
+      "transform 1.15s cubic-bezier(.45,.05,.3,1)";
+
+    requestAnimationFrame(() => {
+      blatt.classList.add("umgeblattert");
+    });
+
+    setTimeout(() => {
+      blatt.style.display = "none";
+      blatt.classList.remove("umgeblattert");
+      animationLaeuft = false;
+    }, 1200);
   }
+
+  /*
+    ZURÜCKBLÄTTERN
+
+    Das Blatt dreht sich von links nach rechts.
+  */
+
+  function zurueckblattern() {
+    if (animationLaeuft) return;
+    if (aktuelleDoppelseite === 0) return;
+
+    animationLaeuft = true;
+
+    const vorherigeSeite =
+      aktuelleDoppelseite - 1;
+
+    blattVorne.innerHTML =
+      rechteHTML(vorherigeSeite);
+
+    blattHinten.innerHTML =
+      linkeHTML(aktuelleDoppelseite);
+
+    /*
+      Erst das Blatt auf der linken Seite
+      positionieren, dann zurückdrehen.
+    */
+
+    blatt.style.transition = "none";
+    blatt.style.display = "block";
+    blatt.classList.add("umgeblattert");
+
+    aktuelleDoppelseite = vorherigeSeite;
+    seitenAnzeigen();
+
+    void blatt.offsetWidth;
+
+    blatt.style.transition =
+      "transform 1.15s cubic-bezier(.45,.05,.3,1)";
+
+    requestAnimationFrame(() => {
+      blatt.classList.remove("umgeblattert");
+    });
+
+    setTimeout(() => {
+      blatt.style.display = "none";
+      animationLaeuft = false;
+    }, 1200);
+  }
+
+  /* ERSTE SEITEN ANZEIGEN */
+
+  seitenAnzeigen();
 </script>
 
 </body>
