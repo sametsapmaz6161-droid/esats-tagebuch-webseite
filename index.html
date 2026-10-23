@@ -4209,7 +4209,10 @@ function bildGrossSchliessen() {
 }
 // Capture verhindert, dass der Bildklick zugleich eine Buchseite umblättert.
 lesemodus.addEventListener("click", (ereignis) => {
-  const bild = ereignis.target.closest(".bildgruppe .tagebuchbild");
+  // Die unsichtbaren Umblätter-Buttons liegen über den Buchseiten.
+  // elementsFromPoint findet auch das darunterliegende Bild.
+  const bild = document.elementsFromPoint(ereignis.clientX, ereignis.clientY)
+    .find(element => element.matches?.(".bildgruppe .tagebuchbild"));
   if (!bild || !lesemodus.classList.contains("aktiv")) return;
   ereignis.preventDefault();
   ereignis.stopPropagation();
