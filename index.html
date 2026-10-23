@@ -569,6 +569,21 @@ body {
 .schlussvideo-neustart { position:absolute; z-index:2; bottom:22px; left:50%; transform:translateX(-50%); padding:12px 22px; border:1px solid #c8a16d; border-radius:9px; background:#392117e8; color:#ffe0ad; font:16px Georgia,serif; cursor:pointer; display:none; }
 .schlussvideo-szene.beendet .schlussvideo-neustart { display:block; }
 
+
+/* Einfache Lesehinweise und Info-Hilfe */
+.hinweis { font-size:clamp(20px,2.5vw,38px); font-weight:bold; text-align:center; white-space:nowrap; background:rgba(39,20,14,.78); border:2px solid #d9b67e; border-radius:999px; padding:13px 25px; box-shadow:0 5px 25px #0009; z-index:5; }
+.hinweis.weiter-hinweis { font-size:clamp(16px,2vw,29px); bottom:5%; }
+.lese-start-hinweis { position:absolute; right:4%; bottom:5%; z-index:17; color:#ffe6b7; background:rgba(53,31,20,.91); border:1px solid #c9a577; border-radius:14px; padding:12px 18px; font-size:clamp(13px,1.35vw,20px); box-shadow:0 5px 20px #0006; pointer-events:none; animation:pulsieren 2.5s infinite; }
+.lese-start-hinweis[hidden] { display:none; }
+.info-knopf { position:absolute; right:3%; top:3%; z-index:30; width:42px; height:42px; border-radius:50%; border:2px solid #b18a54; color:#633e23; background:#fff1d3; box-shadow:0 2px 12px #0004; font:bold 27px Georgia,serif; cursor:pointer; }
+.info-knopf[hidden] { display:none; }
+.info-knopf:hover,.info-knopf:focus-visible { background:#ffe0a2; transform:scale(1.07); }
+.info-blase { position:absolute; right:3%; top:calc(3% + 50px); z-index:31; width:min(365px,84vw); max-height:70%; overflow:auto; box-sizing:border-box; padding:19px 21px; border-radius:14px; border:2px solid #b68c56; background:#fff1d4; color:#52351f; box-shadow:0 12px 35px #0008; font:clamp(13px,1.1vw,16px)/1.5 Georgia,serif; }
+.info-blase[hidden] { display:none; }
+.info-blase strong { display:block; margin-bottom:9px; font-size:1.2em; }
+.info-blase p { margin:8px 0; }
+@media(max-width:650px) { .hinweis { font-size:clamp(13px,3vw,21px); padding:10px 13px; } .info-knopf { width:34px; height:34px; font-size:22px; } .info-blase { top:calc(3% + 39px); } }
+
 </style>
 </head>
 
@@ -669,6 +684,17 @@ body {
     </div>
 
     <div class="buchmitte"></div>
+
+    <div id="leseStartHinweis" class="lese-start-hinweis" hidden>Zum Weiterlesen auf die rechte Seite klicken →</div>
+    <button type="button" id="infoKnopf" class="info-knopf" aria-label="Tipps zum Lesen anzeigen" aria-expanded="false" aria-controls="infoBlase" hidden>ⓘ</button>
+    <div id="infoBlase" class="info-blase" role="region" aria-label="Tipps zur Bedienung" hidden>
+      <strong>📖 So liest du das Tagebuch</strong>
+      <p>→ <b>Klicke auf die rechte Buchseite, um weiterzukommen.</b></p>
+      <p>← Klicke auf die linke Seite, um zurückzublättern.</p>
+      <p>🔎 <b>Schrift zu klein oder zu groß?</b> Halte <b>Strg</b> gedrückt und drehe am <b>Mausrad</b>, um die Ansicht anzupassen. Alternativ: Strg + Plus/Minus.</p>
+      <p>🖼️ <b>Bilder anklicken</b>, um sie größer anzusehen.</p>
+      <p>☷ Über <b>„Kapitel wählen“</b> kannst du zu bereits freigeschalteten Kapiteln springen.</p>
+    </div>
 
     <button
       class="klickbereich zurueck"
@@ -4245,6 +4271,14 @@ function seitenAnzeigen() {
     seitenHTML(rechtsIndex);
 
   kapitelAktivMarkieren();
+  const ersteDoppelseite = aktuelleDoppelseite === 0;
+  document.getElementById("leseStartHinweis").hidden = !ersteDoppelseite;
+  const infoKnopf = document.getElementById("infoKnopf");
+  infoKnopf.hidden = !ersteDoppelseite;
+  if (!ersteDoppelseite) {
+    document.getElementById("infoBlase").hidden = true;
+    infoKnopf.setAttribute("aria-expanded", "false");
+  }
 }
 
 /*
@@ -4311,11 +4345,15 @@ video.addEventListener("ended", () => {
   video.style.display = "none";
   offenesbuch.style.display = "block";
   seitenklick.style.display = "block";
+  hinweis.textContent = "Klicke auf die rechte Buchseite, um weiterzulesen →";
+  hinweis.classList.add("weiter-hinweis");
+  hinweis.style.display = "block";
 });
 
 /* LESEMODUS ÖFFNEN */
 
 async function lesemodusOeffnen() {
+  hinweis.style.display = "none";
   document.getElementById("testEcke").hidden = true;
   if (animationLaeuft) {
     return;
@@ -4689,6 +4727,22 @@ document.addEventListener("keydown", event => {
   }
 });
 
+
+/* Hilfe auf der ersten Doppelseite. */
+const infoKnopf = document.getElementById("infoKnopf");
+const infoBlase = document.getElementById("infoBlase");
+infoKnopf.addEventListener("click", (event) => {
+  event.stopPropagation();
+  infoBlase.hidden = !infoBlase.hidden;
+  infoKnopf.setAttribute("aria-expanded", String(!infoBlase.hidden));
+});
+infoBlase.addEventListener("click", event => event.stopPropagation());
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !infoBlase.hidden) {
+    infoBlase.hidden = true;
+    infoKnopf.setAttribute("aria-expanded", "false");
+  }
+});
 
 /* Schlussvideo: erst beim Weiterklicken nach der allerletzten Doppelseite. */
 let schlussLaeuft = false;
