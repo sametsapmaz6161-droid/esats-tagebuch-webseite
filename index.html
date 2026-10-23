@@ -80,9 +80,7 @@
   }
 
   @keyframes pulsieren {
-    50% {
-      opacity: .45;
-    }
+    50% { opacity: .45; }
   }
 
   .seitenklick {
@@ -141,7 +139,7 @@
     transform: scale(1);
   }
 
-  /* CREMEWEISSES PAPIER */
+  /* PAPIER */
 
   .papier {
     background-color: var(--papier);
@@ -184,7 +182,7 @@
     background: url("steckbrief.png") center / 100% 100% no-repeat;
   }
 
-  /* KLEINERE SCHRIFT BLEIBT ERHALTEN */
+  /* SCHRIFT */
 
   .seiteninhalt {
     position: relative;
@@ -251,7 +249,11 @@
     pointer-events: none;
   }
 
-  /* FLÜSSIGE, EINFACHE UMBLÄTTERANIMATION */
+  /*
+    ANIMIERTES BLATT
+    Die Animation bleibt bewusst einfach,
+    damit sie flüssig läuft.
+  */
 
   .blatt {
     position: absolute;
@@ -286,6 +288,38 @@
     transform: rotateY(180deg);
     border-radius: 12px 2px 2px 12px;
   }
+
+  /*
+    ABDECKUNGEN FÜR DEN SEITENWECHSEL
+
+    Sie sorgen dafür, dass Inhalte nicht
+    vorzeitig sichtbar werden.
+  */
+
+  .seitenabdeckung {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    z-index: 9;
+    display: none;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .seitenabdeckung.links {
+    left: 0;
+  }
+
+  .seitenabdeckung.rechts {
+    right: 0;
+  }
+
+  /*
+    Die Abdeckung auf der gegenüberliegenden
+    Seite wird beim Blättern erst nach der
+    halben Drehung ausgeblendet.
+  */
 
   /* KLICKBEREICHE */
 
@@ -430,19 +464,31 @@
 
   <div class="buch">
 
-    <!-- LINKE SEITE -->
+    <!-- LINKE BUCHSEITE -->
     <div
       id="linkeSeite"
       class="buchseite links steckbrief-seite"
     ></div>
 
-    <!-- RECHTE SEITE -->
+    <!-- RECHTE BUCHSEITE -->
     <div
       id="rechteSeite"
       class="buchseite rechts papier"
     ></div>
 
-    <!-- UMBLÄTTERBARES BLATT -->
+    <!-- ABDECKUNG LINKS -->
+    <div
+      id="abdeckungLinks"
+      class="seitenabdeckung links"
+    ></div>
+
+    <!-- ABDECKUNG RECHTS -->
+    <div
+      id="abdeckungRechts"
+      class="seitenabdeckung rechts"
+    ></div>
+
+    <!-- ANIMIERTES BLATT -->
     <div id="blatt" class="blatt">
 
       <div
@@ -459,14 +505,13 @@
 
     <div class="buchmitte"></div>
 
-    <!-- KLICK ZURÜCK -->
+    <!-- KLICKBEREICHE -->
     <button
       class="klickbereich zurueck"
       onclick="zurueckblattern()"
       aria-label="Zurückblättern"
     ></button>
 
-    <!-- KLICK VORWÄRTS -->
     <button
       class="klickbereich vor"
       onclick="vorblattern()"
@@ -503,13 +548,20 @@
 
   const linkeSeite = document.getElementById("linkeSeite");
   const rechteSeite = document.getElementById("rechteSeite");
+
+  const abdeckungLinks = document.getElementById("abdeckungLinks");
+  const abdeckungRechts = document.getElementById("abdeckungRechts");
+
   const blatt = document.getElementById("blatt");
   const blattVorne = document.getElementById("blattVorne");
   const blattHinten = document.getElementById("blattHinten");
+
   const zurueckButton = document.getElementById("zurueckButton");
 
   let aktuelleDoppelseite = 0;
   let animationLaeuft = false;
+
+  const BLATTER_DAUER = 1150;
 
   /* TESTEINTRÄGE */
 
@@ -552,7 +604,7 @@
     }
   ];
 
-  /* EINTRÄGE IN HTML UMWANDELN */
+  /* EINTRAG ALS HTML */
 
   function eintragHTML(eintrag, seitenzahl) {
     if (!eintrag) return "";
@@ -570,8 +622,6 @@
       </div>
     `;
   }
-
-  /* DOPPELSEITEN */
 
   function anzahlDoppelseiten() {
     return Math.ceil((eintraege.length + 1) / 2);
@@ -642,7 +692,7 @@
     seitenklick.style.display = "block";
   });
 
-  /* LESEMODUS ÖFFNEN */
+  /* LESEMODUS */
 
   function lesemodusOeffnen() {
     aktuelleDoppelseite = 0;
@@ -654,8 +704,6 @@
       lesemodus.classList.add("aktiv");
     });
   }
-
-  /* LESEMODUS SCHLIESSEN */
 
   function lesemodusSchliessen() {
     if (animationLaeuft) return;
@@ -669,7 +717,10 @@
 
   /*
     VORWÄRTSBLÄTTERN
-    Einfache 3D-Drehung wie zuvor.
+
+    Die neue rechte Seite wird erst
+    sichtbar, nachdem das Blatt die
+    bisherige rechte Seite verlassen hat.
   */
 
   function vorblattern() {
@@ -685,11 +736,33 @@
     const naechsteSeite =
       aktuelleDoppelseite + 1;
 
+    /* Alte linke Seite vorerst festhalten */
+    abdeckungLinks.className =
+      "seitenabdeckung links " +
+      (aktuelleDoppelseite === 0
+        ? "steckbrief-seite"
+        : "papier");
+
+    abdeckungLinks.innerHTML =
+      aktuelleDoppelseite === 0
+        ? ""
+        : linkeHTML(aktuelleDoppelseite);
+
+    abdeckungLinks.style.display = "block";
+
+    /* Blatt mit alter rechter Seite */
     blattVorne.innerHTML =
       rechteHTML(aktuelleDoppelseite);
 
+    /* Rückseite des Blatts */
     blattHinten.innerHTML =
       linkeHTML(naechsteSeite);
+
+    /*
+      Neue Doppelseite liegt darunter.
+      Rechts wird sie durch das Blatt
+      zunächst vollständig verdeckt.
+    */
 
     aktuelleDoppelseite = naechsteSeite;
     seitenAnzeigen();
@@ -708,15 +781,22 @@
     });
 
     setTimeout(() => {
+      abdeckungLinks.style.display = "none";
+    }, BLATTER_DAUER / 2);
+
+    setTimeout(() => {
       blatt.style.display = "none";
       blatt.classList.remove("umgeblattert");
       animationLaeuft = false;
-    }, 1200);
+    }, BLATTER_DAUER + 50);
   }
 
   /*
-    ZURÜCKBLÄTTERN
-    Dieselbe Animation in Gegenrichtung.
+    RÜCKWÄRTSBLÄTTERN
+
+    Die bisherige rechte Seite bleibt
+    sichtbar, bis das Blatt sie wieder
+    verdeckt.
   */
 
   function zurueckblattern() {
@@ -728,6 +808,16 @@
     const vorherigeSeite =
       aktuelleDoppelseite - 1;
 
+    /* Alte rechte Seite festhalten */
+    abdeckungRechts.className =
+      "seitenabdeckung rechts papier";
+
+    abdeckungRechts.innerHTML =
+      rechteHTML(aktuelleDoppelseite);
+
+    abdeckungRechts.style.display = "block";
+
+    /* Blattseiten vorbereiten */
     blattVorne.innerHTML =
       rechteHTML(vorherigeSeite);
 
@@ -751,12 +841,16 @@
     });
 
     setTimeout(() => {
+      abdeckungRechts.style.display = "none";
+    }, BLATTER_DAUER / 2);
+
+    setTimeout(() => {
       blatt.style.display = "none";
       animationLaeuft = false;
-    }, 1200);
+    }, BLATTER_DAUER + 50);
   }
 
-  /* ERSTE SEITE ANZEIGEN */
+  /* ERSTE SEITE */
 
   seitenAnzeigen();
 </script>
