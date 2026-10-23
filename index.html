@@ -7,435 +7,430 @@
 <title>Esats Tagebuch ❤️</title>
 
 <style>
-  :root {
-    --papier: #fbf1db;
-    --schrift: #714322;
-    --leder: #392117;
-    --blaetterdauer: 1150ms;
+:root {
+  --papier: #fbf1db;
+  --schrift: #714322;
+  --leder: #392117;
+  --blaetterdauer: 1150ms;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #160d0a;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+/* STARTSEITE */
+
+.szene {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.bildbereich {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(100vw, 177.78dvh);
+  aspect-ratio: 16 / 9;
+  transform: translate(-50%, -50%);
+}
+
+.hintergrund,
+.video,
+.offenes-buch {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video,
+.offenes-buch {
+  display: none;
+}
+
+.buchbutton {
+  position: absolute;
+  left: 33%;
+  top: 16%;
+  width: 37%;
+  height: 67%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hinweis {
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffe0ad;
+  text-shadow: 0 2px 8px #000;
+  pointer-events: none;
+  animation: pulsieren 2s infinite;
+}
+
+@keyframes pulsieren {
+  50% {
+    opacity: .45;
   }
+}
 
-  * {
-    box-sizing: border-box;
-  }
+.seitenklick {
+  position: absolute;
+  left: 52%;
+  top: 22%;
+  width: 28%;
+  height: 55%;
+  display: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
 
-  body {
-    margin: 0;
-    overflow: hidden;
-    background: #160d0a;
-    font-family: Georgia, "Times New Roman", serif;
-  }
+/* LESEMODUS */
 
-  /* STARTSEITE */
+.lesemodus {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .6s ease;
+}
 
-  .szene {
-    position: relative;
-    width: 100vw;
-    height: 100dvh;
-    overflow: hidden;
-  }
+.lesemodus.aktiv {
+  display: flex;
+  opacity: 1;
+}
 
-  .bildbereich {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: min(100vw, 177.78dvh);
-    aspect-ratio: 16 / 9;
-    transform: translate(-50%, -50%);
-  }
+.blur-hintergrund {
+  position: absolute;
+  inset: -25px;
+  background: url("buch-offen.png") center / cover no-repeat;
+  filter: blur(15px) brightness(.5);
+  transform: scale(1.05);
+}
 
-  .hintergrund,
-  .video,
-  .offenes-buch {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+/* BUCH */
 
-  .video,
-  .offenes-buch {
-    display: none;
-  }
+.buch {
+  position: relative;
+  z-index: 2;
+  width: min(92vw, 1600px);
+  height: 90dvh;
+  display: flex;
+  perspective: 2400px;
+  filter: drop-shadow(0 25px 35px #000a);
+  transform: scale(.85);
+  transition: transform .8s ease;
+}
 
-  .buchbutton {
-    position: absolute;
-    left: 33%;
-    top: 16%;
-    width: 37%;
-    height: 67%;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-  }
+.lesemodus.aktiv .buch {
+  transform: scale(1);
+}
 
-  .hinweis {
-    position: absolute;
-    bottom: 4%;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #ffe0ad;
-    text-shadow: 0 2px 8px #000;
-    pointer-events: none;
-    animation: pulsieren 2s infinite;
-  }
+.papier {
+  background-color: var(--papier);
+  background-image:
+    radial-gradient(
+      ellipse at 35% 20%,
+      rgba(255,255,255,.20),
+      transparent 70%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(100,70,40,.055),
+      transparent 12%,
+      transparent 90%,
+      rgba(100,70,40,.035)
+    );
+}
 
-  @keyframes pulsieren {
-    50% { opacity: .45; }
-  }
+.buchseite {
+  position: relative;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  color: var(--schrift);
+}
 
-  .seitenklick {
-    position: absolute;
-    left: 52%;
-    top: 22%;
-    width: 28%;
-    height: 55%;
-    display: none;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-  }
+.links {
+  border-radius: 14px 2px 2px 14px;
+  box-shadow: inset -20px 0 25px -22px #43240e;
+}
 
-  /* LESEMODUS */
+.rechts {
+  border-radius: 2px 14px 14px 2px;
+  box-shadow: inset 20px 0 25px -22px #43240e;
+}
 
-  .lesemodus {
-    position: fixed;
-    inset: 0;
-    z-index: 20;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity .6s ease;
-  }
+.steckbrief-seite {
+  background:
+    url("steckbrief.png")
+    center / 100% 100% no-repeat;
+}
 
-  .lesemodus.aktiv {
-    display: flex;
-    opacity: 1;
-  }
+/* TAGEBUCHTEXT */
 
-  .blur-hintergrund {
-    position: absolute;
-    inset: -25px;
-    background: url("buch-offen.png") center / cover no-repeat;
-    filter: blur(15px) brightness(.5);
-    transform: scale(1.05);
-  }
+.seiteninhalt {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(20px, 3vw, 48px);
+  color: var(--schrift);
+}
 
-  /* BUCH */
+.seiteninhalt h2 {
+  font-size: clamp(17px, 1.65vw, 24px);
+  font-weight: normal;
+  line-height: 1.45;
+  margin: 0 0 24px;
+}
 
+.seiteninhalt p {
+  font-size: clamp(11px, 1.05vw, 16px);
+  line-height: 1.8;
+  margin: 0 0 19px;
+  overflow-wrap: break-word;
+}
+
+.seiteninhalt .datum {
+  display: block;
+  margin-bottom: 20px;
+  font-size: clamp(11px, .9vw, 13px);
+  letter-spacing: .04em;
+  opacity: .7;
+}
+
+.seiteninhalt .fortsetzung {
+  display: block;
+  margin-bottom: 17px;
+  font-size: 12px;
+  font-style: italic;
+  opacity: .7;
+}
+
+.seiteninhalt .seitenzahl {
+  position: absolute;
+  bottom: 17px;
+  font-size: 12px;
+  opacity: .5;
+}
+
+.buchseite.rechts .seitenzahl,
+.blattseite:not(.rueck) .seitenzahl {
+  right: 28px;
+}
+
+.buchseite.links .seitenzahl,
+.blattseite.rueck .seitenzahl {
+  left: 28px;
+}
+
+/* BILDER */
+
+.tagebuchbild {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: contain;
+  margin: 12px auto 20px;
+  border-radius: 4px;
+}
+
+.bildunterschrift {
+  font-size: 12px !important;
+  font-style: italic;
+  text-align: center;
+  opacity: .75;
+  margin-top: -9px !important;
+}
+
+/* BUCHMITTE */
+
+.buchmitte {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 8px);
+  width: 16px;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    #67432477,
+    #2b160c77,
+    #67432455
+  );
+  z-index: 12;
+  pointer-events: none;
+}
+
+/* UMBLÄTTERANIMATION */
+
+.blatt {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition:
+    transform var(--blaetterdauer)
+    cubic-bezier(.45,.05,.3,1);
+  z-index: 10;
+  display: none;
+  pointer-events: none;
+}
+
+.blatt.umgeblattert {
+  transform: rotateY(-180deg);
+}
+
+.blattseite {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 2px 12px 12px 2px;
+  box-shadow: inset 14px 0 22px -20px #321b0d;
+}
+
+.blattseite.rueck {
+  transform: rotateY(180deg);
+  border-radius: 12px 2px 2px 12px;
+}
+
+/* SEITENABDECKUNGEN */
+
+.seitenabdeckung {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  z-index: 9;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.seitenabdeckung.links {
+  left: 0;
+}
+
+.seitenabdeckung.rechts {
+  right: 0;
+}
+
+/* KLICKBEREICHE */
+
+.klickbereich {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  z-index: 15;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.klickbereich.vor {
+  right: 0;
+}
+
+.klickbereich.zurueck {
+  left: 0;
+}
+
+/* STEUERUNG */
+
+.steuerung {
+  position: absolute;
+  bottom: 1%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  gap: 15px;
+}
+
+.steuerung button {
+  background: var(--leder);
+  color: #ffe0ad;
+  border: 1px solid #c8a16d;
+  border-radius: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+}
+
+.steuerung button:hover {
+  background: #593628;
+}
+
+.steuerung button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* VERSTECKTER MESSBEREICH */
+
+.messbereich {
+  position: fixed;
+  top: 0;
+  left: -200vw;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* MOBILE ANSICHT */
+
+@media (max-width: 650px) {
   .buch {
-    position: relative;
-    z-index: 2;
-    width: min(92vw, 1600px);
-    height: 90dvh;
-    display: flex;
-    perspective: 2400px;
-    filter: drop-shadow(0 25px 35px #000a);
-    transform: scale(.85);
-    transition: transform .8s ease;
+    width: 96vw;
+    height: 75dvh;
   }
-
-  .lesemodus.aktiv .buch {
-    transform: scale(1);
-  }
-
-  .papier {
-    background-color: var(--papier);
-    background-image:
-      radial-gradient(
-        ellipse at 35% 20%,
-        rgba(255,255,255,.20),
-        transparent 70%
-      ),
-      linear-gradient(
-        90deg,
-        rgba(100,70,40,.055),
-        transparent 12%,
-        transparent 90%,
-        rgba(100,70,40,.035)
-      );
-  }
-
-  .buchseite {
-    position: relative;
-    width: 50%;
-    height: 100%;
-    overflow: hidden;
-    color: var(--schrift);
-  }
-
-  .links {
-    border-radius: 14px 2px 2px 14px;
-    box-shadow: inset -20px 0 25px -22px #43240e;
-  }
-
-  .rechts {
-    border-radius: 2px 14px 14px 2px;
-    box-shadow: inset 20px 0 25px -22px #43240e;
-  }
-
-  .steckbrief-seite {
-    background:
-      url("steckbrief.png")
-      center / 100% 100% no-repeat;
-  }
-
-  /* TAGEBUCHTEXT */
 
   .seiteninhalt {
-    position: relative;
-    height: 100%;
-    overflow: hidden;
-    padding: clamp(20px, 3vw, 48px);
-    color: var(--schrift);
+    padding: 12px;
   }
 
   .seiteninhalt h2 {
-    font-size: clamp(17px, 1.65vw, 24px);
-    font-weight: normal;
-    line-height: 1.45;
-    margin: 0 0 24px;
+    font-size: 15px;
+    margin-bottom: 12px;
   }
 
   .seiteninhalt p {
-    font-size: clamp(11px, 1.05vw, 16px);
-    line-height: 1.8;
-    margin: 0 0 19px;
-    overflow-wrap: break-word;
+    font-size: 10px;
+    line-height: 1.6;
+    margin-bottom: 10px;
   }
-
-  .seiteninhalt .datum {
-    display: block;
-    margin-bottom: 20px;
-    font-size: clamp(11px, .9vw, 13px);
-    letter-spacing: .04em;
-    opacity: .7;
-  }
-
-  .seiteninhalt .fortsetzung {
-    display: block;
-    margin-bottom: 17px;
-    font-size: 12px;
-    font-style: italic;
-    opacity: .7;
-  }
-
-  .seiteninhalt .seitenzahl {
-    position: absolute;
-    bottom: 17px;
-    font-size: 12px;
-    opacity: .5;
-  }
-
-  .buchseite.rechts .seitenzahl,
-  .blattseite:not(.rueck) .seitenzahl {
-    right: 28px;
-  }
-
-  .buchseite.links .seitenzahl,
-  .blattseite.rueck .seitenzahl {
-    left: 28px;
-  }
-
-  /* BILDER INNERHALB DES TAGEBUCHS */
 
   .tagebuchbild {
-    display: block;
-    width: 100%;
-    height: auto;
-    max-height: 300px;
-    object-fit: contain;
-    margin: 12px auto 20px;
-    border-radius: 4px;
-  }
-
-  .bildunterschrift {
-    font-size: 12px !important;
-    font-style: italic;
-    text-align: center;
-    opacity: .75;
-    margin-top: -9px !important;
-  }
-
-  /* BUCHMITTE */
-
-  .buchmitte {
-    position: absolute;
-    top: 0;
-    left: calc(50% - 8px);
-    width: 16px;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      #67432477,
-      #2b160c77,
-      #67432455
-    );
-    z-index: 12;
-    pointer-events: none;
-  }
-
-  /* UMBLÄTTERANIMATION */
-
-  .blatt {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: 50%;
-    height: 100%;
-    transform-origin: left center;
-    transform-style: preserve-3d;
-    transform: rotateY(0deg);
-    transition:
-      transform var(--blaetterdauer)
-      cubic-bezier(.45,.05,.3,1);
-    z-index: 10;
-    display: none;
-    pointer-events: none;
-  }
-
-  .blatt.umgeblattert {
-    transform: rotateY(-180deg);
-  }
-
-  .blattseite {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    border-radius: 2px 12px 12px 2px;
-    box-shadow:
-      inset 14px 0 22px -20px #321b0d;
-  }
-
-  .blattseite.rueck {
-    transform: rotateY(180deg);
-    border-radius: 12px 2px 2px 12px;
-  }
-
-  /* SEITENABDECKUNGEN */
-
-  .seitenabdeckung {
-    position: absolute;
-    top: 0;
-    width: 50%;
-    height: 100%;
-    z-index: 9;
-    display: none;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  .seitenabdeckung.links {
-    left: 0;
-  }
-
-  .seitenabdeckung.rechts {
-    right: 0;
-  }
-
-  /* KLICKBEREICHE */
-
-  .klickbereich {
-    position: absolute;
-    top: 0;
-    width: 50%;
-    height: 100%;
-    z-index: 15;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-  }
-
-  .klickbereich.vor {
-    right: 0;
-  }
-
-  .klickbereich.zurueck {
-    left: 0;
-  }
-
-  /* STEUERUNG */
-
-  .steuerung {
-    position: absolute;
-    bottom: 1%;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 30;
-    display: flex;
-    gap: 15px;
+    max-height: 160px;
   }
 
   .steuerung button {
-    background: var(--leder);
-    color: #ffe0ad;
-    border: 1px solid #c8a16d;
-    border-radius: 8px;
-    padding: 12px 20px;
-    cursor: pointer;
+    padding: 9px 12px;
+    font-size: 12px;
   }
-
-  .steuerung button:hover {
-    background: #593628;
-  }
-
-  .steuerung button:disabled {
-    opacity: .4;
-    cursor: not-allowed;
-  }
-
-  /* VERSTECKTER MESSBEREICH */
-
-  .messbereich {
-    position: fixed;
-    top: 0;
-    left: -200vw;
-    visibility: hidden;
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /*
-    Der Messbereich hat dieselbe
-    Breite und dieselben Textstile
-    wie eine echte Buchseite.
-  */
-
-  /* MOBILE ANSICHT */
-
-  @media (max-width: 650px) {
-    .buch {
-      width: 96vw;
-      height: 75dvh;
-    }
-
-    .seiteninhalt {
-      padding: 12px;
-    }
-
-    .seiteninhalt h2 {
-      font-size: 15px;
-      margin-bottom: 12px;
-    }
-
-    .seiteninhalt p {
-      font-size: 10px;
-      line-height: 1.6;
-      margin-bottom: 10px;
-    }
-
-    .tagebuchbild {
-      max-height: 160px;
-    }
-
-    .steuerung button {
-      padding: 9px 12px;
-      font-size: 12px;
-    }
-  }
+}
 </style>
 </head>
 
@@ -568,754 +563,805 @@
 
 </section>
 
-<!-- UNSICHTBARER BEREICH ZUM MESSEN -->
-
 <div id="messbereich" class="messbereich">
   <div id="messinhalt" class="seiteninhalt"></div>
 </div>
 
 <script>
-  const video = document.getElementById("buchvideo");
-  const startbild = document.getElementById("startbild");
-  const offenesbuch = document.getElementById("offenesbuch");
-  const buchbutton = document.getElementById("buchbutton");
-  const hinweis = document.getElementById("hinweis");
-  const seitenklick = document.getElementById("seitenklick");
-  const lesemodus = document.getElementById("lesemodus");
 
-  const buch = document.getElementById("buch");
+/* ELEMENTE */
 
-  const linkeSeite = document.getElementById("linkeSeite");
-  const rechteSeite = document.getElementById("rechteSeite");
+const video = document.getElementById("buchvideo");
+const startbild = document.getElementById("startbild");
+const offenesbuch = document.getElementById("offenesbuch");
+const buchbutton = document.getElementById("buchbutton");
+const hinweis = document.getElementById("hinweis");
+const seitenklick = document.getElementById("seitenklick");
+const lesemodus = document.getElementById("lesemodus");
 
-  const abdeckungLinks =
-    document.getElementById("abdeckungLinks");
+const buch = document.getElementById("buch");
 
-  const abdeckungRechts =
-    document.getElementById("abdeckungRechts");
+const linkeSeite = document.getElementById("linkeSeite");
+const rechteSeite = document.getElementById("rechteSeite");
 
-  const blatt = document.getElementById("blatt");
-  const blattVorne = document.getElementById("blattVorne");
-  const blattHinten = document.getElementById("blattHinten");
+const abdeckungLinks =
+  document.getElementById("abdeckungLinks");
 
-  const zurueckButton =
-    document.getElementById("zurueckButton");
+const abdeckungRechts =
+  document.getElementById("abdeckungRechts");
 
-  const messbereich =
-    document.getElementById("messbereich");
+const blatt = document.getElementById("blatt");
+const blattVorne = document.getElementById("blattVorne");
+const blattHinten = document.getElementById("blattHinten");
 
-  const messinhalt =
-    document.getElementById("messinhalt");
+const zurueckButton =
+  document.getElementById("zurueckButton");
 
-  const BLATTER_DAUER = 1150;
+const messbereich =
+  document.getElementById("messbereich");
 
-  let aktuelleDoppelseite = 0;
-  let animationLaeuft = false;
-  let seiten = [];
+const messinhalt =
+  document.getElementById("messinhalt");
+
+const BLATTER_DAUER = 1150;
+
+let aktuelleDoppelseite = 0;
+let animationLaeuft = false;
+let seiten = [];
+
+/*
+  TAGEBUCHEINTRÄGE
+
+  Text und Bilder können beliebig
+  miteinander kombiniert werden.
+*/
+
+const eintraege = [
+  {
+    tag: "Tag 01",
+    titel: "Sechs Jahre nach dem letzten Tagebucheintrag.",
+    inhalt: [
+      {
+        typ: "text",
+        text: "Liebes Tagebuch,"
+      },
+      {
+        typ: "text",
+        text: "sechs Jahre. Sechs verdammte Jahre. So lange habe ich nicht mehr in dich geschrieben. Als ich dich heute in einer alten Umzugskiste gefunden habe, musste ich lachen. Auf der ersten Seite steht noch mein Name. Esat. 27 Jahre alt. Single. Weißer Audi TT. Auf der Suche nach der großen Liebe."
+      },
+      {
+        typ: "text",
+        text: "Was für ein Idiot. Damals dachte ich, das größte Problem meines Lebens wäre, ob Jessica mich wirklich liebt."
+      }
+    ]
+  },
+
+  {
+    tag: "Tag 02 – Belastungstest",
+    titel: "Ein Tag voller unerwarteter Ereignisse",
+    inhalt: [
+      {
+        typ: "text",
+        text: "Liebes Tagebuch,"
+      },
+
+      ...Array.from({ length: 8 }, (_, i) => ({
+        typ: "text",
+        text: `Abschnitt ${i + 1}: Heute war einer dieser Tage, an denen einfach alles anders lief als geplant. Schon am Morgen hatte ich das Gefühl, dass irgendetwas passieren würde. Ich machte mich auf den Weg, während mir tausend Gedanken durch den Kopf gingen. Die Straßen waren voller Menschen und trotzdem fühlte ich mich seltsam allein. Ich fragte mich, wie mein Leben wohl in einem Jahr aussehen würde und ob ich bis dahin endlich die Antworten finden würde, nach denen ich schon so lange suche.`
+      })),
+
+      {
+        typ: "bild",
+        datei: "startseite.png",
+        alt: "Testbild 1"
+      },
+
+      ...Array.from({ length: 8 }, (_, i) => ({
+        typ: "text",
+        text: `Abschnitt ${i + 9}: Nach einer Weile blieb ich stehen und betrachtete meine Umgebung. Irgendwie hatte ich das Gefühl, dass ich einen wichtigen Moment gerade erst begreifen musste. Vielleicht lag es am Wetter, vielleicht an meinen Erinnerungen oder vielleicht einfach daran, dass ich in letzter Zeit viel zu wenig geschlafen hatte. Jedenfalls wusste ich, dass ich diesen Tag nicht so schnell vergessen würde.`
+      })),
+
+      {
+        typ: "bild",
+        datei: "buch-offen.png",
+        alt: "Testbild 2"
+      },
+
+      ...Array.from({ length: 8 }, (_, i) => ({
+        typ: "text",
+        text: `Abschnitt ${i + 17}: Am Abend setzte ich mich schließlich an meinen Schreibtisch und öffnete mein Tagebuch. Ich wollte alles festhalten, bevor die Erinnerungen verblassen. Manche Dinge ergeben erst einen Sinn, wenn man sie aufschreibt. Vielleicht werde ich eines Tages zurückblättern und verstehen, warum genau dieser Tag so wichtig war. Bis dahin bleibt mir nichts anderes übrig, als weiterzumachen und zu sehen, was morgen passiert.`
+      }))
+    ]
+  },
+
+  {
+    tag: "Tag 03 – Testeintrag",
+    titel: "Alte Erinnerungen",
+    inhalt: [
+      {
+        typ: "text",
+        text: "Liebes Tagebuch,"
+      },
+      {
+        typ: "text",
+        text: "manche Erinnerungen verschwinden nie vollständig. Sie warten nur darauf, wiederentdeckt zu werden."
+      },
+      {
+        typ: "text",
+        text: "Ich bin gespannt, was die nächsten Tage bringen."
+      }
+    ]
+  },
+
+  {
+    tag: "Tag 04 – Testeintrag",
+    titel: "Was morgen bringt",
+    inhalt: [
+      {
+        typ: "text",
+        text: "Liebes Tagebuch,"
+      },
+      {
+        typ: "text",
+        text: "ich hätte nicht gedacht, dass ich wieder so regelmäßig schreiben würde."
+      },
+      {
+        typ: "text",
+        text: "Aber vielleicht hilft es mir, die Dinge klarer zu sehen."
+      }
+    ]
+  }
+];
+
+/* HTML SICHER ERZEUGEN */
+
+function htmlSicher(text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+/* TEXT- UND BILDBAUSTEINE */
+
+function blockHTML(block) {
+  if (block.typ === "bild") {
+    const quelle = htmlSicher(block.datei);
+    const alt = htmlSicher(block.alt || "");
+
+    return `
+      <img
+        class="tagebuchbild"
+        src="${quelle}"
+        alt="${alt}"
+      >
+    `;
+  }
+
+  return `<p>${htmlSicher(block.text)}</p>`;
+}
+
+/* SEITENÜBERSCHRIFT */
+
+function kopfHTML(eintrag, fortsetzung = false) {
+  if (fortsetzung) {
+    return `
+      <span class="fortsetzung">
+        ${htmlSicher(eintrag.tag)} – Fortsetzung
+      </span>
+    `;
+  }
+
+  return `
+    <span class="datum">
+      ${htmlSicher(eintrag.tag)}
+    </span>
+    <h2>${htmlSicher(eintrag.titel)}</h2>
+  `;
+}
+
+/* MESSBEREICH ANPASSEN */
+
+function messbereichAnpassen() {
+  const breite = buch.clientWidth / 2;
+  const hoehe = buch.clientHeight;
+
+  messbereich.style.width = breite + "px";
+  messbereich.style.height = hoehe + "px";
+
+  messinhalt.style.width = "100%";
+  messinhalt.style.height = "100%";
+}
+
+/*
+  PRÜFEN, OB INHALT AUF EINE SEITE PASST
+
+  Die Unterkante des letzten Elements
+  wird mit dem verfügbaren Platz
+  auf der Buchseite verglichen.
+*/
+
+function passtAufSeite(html) {
+  messinhalt.innerHTML = html;
+
+  const stil = getComputedStyle(messinhalt);
+
+  const paddingUnten =
+    parseFloat(stil.paddingBottom);
+
+  const elemente = [...messinhalt.children];
+
+  if (elemente.length === 0) {
+    return true;
+  }
+
+  const letztes = elemente[elemente.length - 1];
+
+  const seitenUnterkante =
+    messinhalt.getBoundingClientRect().bottom;
+
+  const inhaltUnterkante =
+    letztes.getBoundingClientRect().bottom;
+
+  const sicherheitsabstand = 22;
+
+  return inhaltUnterkante <=
+    seitenUnterkante -
+    paddingUnten -
+    sicherheitsabstand;
+}
+
+/*
+  TEXT AUTOMATISCH AUFTEILEN
+
+  Erst wird ermittelt, wie viele Wörter
+  noch auf die Seite passen.
+
+  Danach wird bevorzugt nach einem
+  vollständigen Satz getrennt.
+*/
+
+function textAufteilen(text, kopf, bisher) {
+  const woerter = text.trim().split(/\s+/);
+
+  let links = 0;
+  let rechts = woerter.length;
+  let besteAnzahl = 0;
+
+  while (links <= rechts) {
+    const mitte = Math.floor(
+      (links + rechts) / 2
+    );
+
+    const teil = woerter
+      .slice(0, mitte)
+      .join(" ");
+
+    const probe =
+      kopf +
+      bisher +
+      `<p>${htmlSicher(teil)}</p>`;
+
+    if (passtAufSeite(probe)) {
+      besteAnzahl = mitte;
+      links = mitte + 1;
+    } else {
+      rechts = mitte - 1;
+    }
+  }
+
+  let trennstelle = besteAnzahl;
 
   /*
-    TAGEBUCHEINTRÄGE
-
-    Jeder Eintrag besteht aus Bausteinen:
-    - text
-    - bild
-
-    Die Reihenfolge bleibt erhalten.
+    Satzende suchen, solange dabei
+    maximal 15 % der passenden Wörter
+    auf die nächste Seite wandern.
   */
 
-  const eintraege = [
-    {
-      tag: "Tag 01",
-      titel: "Sechs Jahre nach dem letzten Tagebucheintrag.",
-      inhalt: [
-        {
-          typ: "text",
-          text: "Liebes Tagebuch,"
-        },
-        {
-          typ: "text",
-          text: "sechs Jahre. Sechs verdammte Jahre. So lange habe ich nicht mehr in dich geschrieben. Als ich dich heute in einer alten Umzugskiste gefunden habe, musste ich lachen. Auf der ersten Seite steht noch mein Name. Esat. 27 Jahre alt. Single. Weißer Audi TT. Auf der Suche nach der großen Liebe."
-        },
-        {
-          typ: "text",
-          text: "Was für ein Idiot. Damals dachte ich, das größte Problem meines Lebens wäre, ob Jessica mich wirklich liebt."
+  const mindestAnzahl =
+    Math.ceil(besteAnzahl * 0.85);
+
+  for (
+    let i = besteAnzahl;
+    i >= mindestAnzahl && i > 0;
+    i--
+  ) {
+    if (/[.!?]["'»“”)]?$/.test(woerter[i - 1])) {
+      trennstelle = i;
+      break;
+    }
+  }
+
+  return {
+    passend: woerter
+      .slice(0, trennstelle)
+      .join(" "),
+
+    rest: woerter
+      .slice(trennstelle)
+      .join(" ")
+  };
+}
+
+/*
+  EINEN TAGEBUCHEINTRAG AUFTEILEN
+
+  Jeder Eintrag darf beliebig viele
+  Seiten benötigen.
+*/
+
+function eintragAufteilen(eintrag) {
+  const ergebnis = [];
+
+  let kopf = kopfHTML(eintrag, false);
+  let inhalt = "";
+
+  function seiteAbschliessen() {
+    ergebnis.push(kopf + inhalt);
+
+    kopf = kopfHTML(eintrag, true);
+    inhalt = "";
+  }
+
+  for (const block of eintrag.inhalt) {
+
+    /* BILD */
+
+    if (block.typ === "bild") {
+      const bild = blockHTML(block);
+
+      if (passtAufSeite(kopf + inhalt + bild)) {
+        inhalt += bild;
+      } else {
+        /*
+          Bild passt nicht mehr:
+          Auf die nächste Seite verschieben.
+        */
+
+        seiteAbschliessen();
+        inhalt += bild;
+      }
+
+      continue;
+    }
+
+    /* TEXT */
+
+    let restText = block.text.trim();
+
+    while (restText.length > 0) {
+      const ganzerAbsatz =
+        `<p>${htmlSicher(restText)}</p>`;
+
+      if (
+        passtAufSeite(
+          kopf + inhalt + ganzerAbsatz
+        )
+      ) {
+        inhalt += ganzerAbsatz;
+        restText = "";
+        break;
+      }
+
+      const teilung = textAufteilen(
+        restText,
+        kopf,
+        inhalt
+      );
+
+      if (teilung.passend) {
+        inhalt +=
+          `<p>${htmlSicher(teilung.passend)}</p>`;
+
+        restText = teilung.rest;
+
+        seiteAbschliessen();
+      } else {
+        if (inhalt) {
+          seiteAbschliessen();
+        } else {
+          /*
+            Schutz vor Endlosschleifen
+            bei sehr kleinen Buchseiten.
+          */
+
+          const erstesWort =
+            restText.split(/\s+/)[0];
+
+          inhalt +=
+            `<p>${htmlSicher(erstesWort)}</p>`;
+
+          restText = restText
+            .slice(erstesWort.length)
+            .trim();
+
+          seiteAbschliessen();
         }
-      ]
-    },
+      }
+    }
+  }
+
+  if (inhalt || ergebnis.length === 0) {
+    ergebnis.push(kopf + inhalt);
+  }
+
+  return ergebnis;
+}
+
+/*
+  ALLE BUCHSEITEN ERZEUGEN
+
+  Die erste linke Seite ist der Steckbrief.
+  Danach folgen die Tagebucheinträge.
+*/
+
+function alleSeitenBerechnen() {
+  messbereichAnpassen();
+
+  const neueSeiten = [
     {
-  tag: "Tag 02 – Belastungstest",
-  titel: "Ein Tag voller unerwarteter Ereignisse",
-  inhalt: [
-    {
-      typ: "text",
-      text: "Liebes Tagebuch,"
-    },
-    ...Array.from({ length: 8 }, (_, i) => ({
-      typ: "text",
-      text: `Abschnitt ${i + 1}: Heute war einer dieser Tage, an denen einfach alles anders lief als geplant. Schon am Morgen hatte ich das Gefühl, dass irgendetwas passieren würde. Ich machte mich auf den Weg, während mir tausend Gedanken durch den Kopf gingen. Die Straßen waren voller Menschen und trotzdem fühlte ich mich seltsam allein. Ich fragte mich, wie mein Leben wohl in einem Jahr aussehen würde und ob ich bis dahin endlich die Antworten finden würde, nach denen ich schon so lange suche.`
-    })),
-    {
-      typ: "bild",
-      datei: "startseite.png",
-      alt: "Testbild 1"
-    },
-    ...Array.from({ length: 8 }, (_, i) => ({
-      typ: "text",
-      text: `Abschnitt ${i + 9}: Nach einer Weile blieb ich stehen und betrachtete meine Umgebung. Irgendwie hatte ich das Gefühl, dass ich einen wichtigen Moment gerade erst begreifen musste. Vielleicht lag es am Wetter, vielleicht an meinen Erinnerungen oder vielleicht einfach daran, dass ich in letzter Zeit viel zu wenig geschlafen hatte. Jedenfalls wusste ich, dass ich diesen Tag nicht so schnell vergessen würde.`
-    })),
-    {
-      typ: "bild",
-      datei: "buch-offen.png",
-      alt: "Testbild 2"
-    },
-    ...Array.from({ length: 8 }, (_, i) => ({
-      typ: "text",
-      text: `Abschnitt ${i + 17}: Am Abend setzte ich mich schließlich an meinen Schreibtisch und öffnete mein Tagebuch. Ich wollte alles festhalten, bevor die Erinnerungen verblassen. Manche Dinge ergeben erst einen Sinn, wenn man sie aufschreibt. Vielleicht werde ich eines Tages zurückblättern und verstehen, warum genau dieser Tag so wichtig war. Bis dahin bleibt mir nichts anderes übrig, als weiterzumachen und zu sehen, was morgen passiert.`
-    }))
-  ]
-},
-    {
-      tag: "Tag 03 – Testeintrag",
-      titel: "Alte Erinnerungen",
-      inhalt: [
-        {
-          typ: "text",
-          text: "Liebes Tagebuch,"
-        },
-        {
-          typ: "text",
-          text: "manche Erinnerungen verschwinden nie vollständig. Sie warten nur darauf, wiederentdeckt zu werden."
-        },
-        {
-          typ: "text",
-          text: "Ich bin gespannt, was die nächsten Tage bringen."
-        }
-      ]
-    },
-    {
-      tag: "Tag 04 – Testeintrag",
-      titel: "Was morgen bringt",
-      inhalt: [
-        {
-          typ: "text",
-          text: "Liebes Tagebuch,"
-        },
-        {
-          typ: "text",
-          text: "ich hätte nicht gedacht, dass ich wieder so regelmäßig schreiben würde."
-        },
-        {
-          typ: "text",
-          text: "Aber vielleicht hilft es mir, die Dinge klarer zu sehen."
-        }
-      ]
+      typ: "steckbrief",
+      html: ""
     }
   ];
 
-  /*
-    SICHERES HTML ERZEUGEN
+  for (const eintrag of eintraege) {
+    const teile = eintragAufteilen(eintrag);
 
-    Texte werden maskiert, damit sie
-    keine HTML-Struktur verändern.
-  */
-
-  function htmlSicher(text) {
-    return String(text)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
+    for (const teil of teile) {
+      neueSeiten.push({
+        typ: "text",
+        html: teil
+      });
+    }
   }
 
-  function blockHTML(block) {
-    if (block.typ === "bild") {
-      const quelle = htmlSicher(block.datei);
-      const alt = htmlSicher(block.alt || "");
+  seiten = neueSeiten;
+}
 
-      return `
-        <img
-          class="tagebuchbild"
-          src="${quelle}"
-          alt="${alt}"
-        >
-      `;
-    }
+/* SEITENINHALT */
 
-    return `<p>${htmlSicher(block.text)}</p>`;
+function seitenHTML(seitenIndex) {
+  const seite = seiten[seitenIndex];
+
+  if (!seite) {
+    return "";
   }
 
-  function kopfHTML(eintrag, fortsetzung = false) {
-    if (fortsetzung) {
-      return `
-        <span class="fortsetzung">
-          ${htmlSicher(eintrag.tag)} – Fortsetzung
-        </span>
-      `;
-    }
+  if (seite.typ === "steckbrief") {
+    return "";
+  }
 
-    return `
-      <span class="datum">
-        ${htmlSicher(eintrag.tag)}
+  return `
+    <div class="seiteninhalt">
+      ${seite.html}
+      <span class="seitenzahl">
+        ${seitenIndex + 1}
       </span>
-      <h2>${htmlSicher(eintrag.titel)}</h2>
-    `;
+    </div>
+  `;
+}
+
+/* SEITENINDIZES */
+
+function linkeIndex(doppelseite) {
+  return doppelseite * 2;
+}
+
+function rechteIndex(doppelseite) {
+  return doppelseite * 2 + 1;
+}
+
+function anzahlDoppelseiten() {
+  return Math.ceil(seiten.length / 2);
+}
+
+/* SEITEN ANZEIGEN */
+
+function seitenAnzeigen() {
+  const linksIndex =
+    linkeIndex(aktuelleDoppelseite);
+
+  const rechtsIndex =
+    rechteIndex(aktuelleDoppelseite);
+
+  const links = seiten[linksIndex];
+
+  if (links && links.typ === "steckbrief") {
+    linkeSeite.className =
+      "buchseite links steckbrief-seite";
+
+    linkeSeite.innerHTML = "";
+  } else {
+    linkeSeite.className =
+      "buchseite links papier";
+
+    linkeSeite.innerHTML =
+      seitenHTML(linksIndex);
   }
 
-  /*
-    SEITENHÖHE MESSEN
+  rechteSeite.className =
+    "buchseite rechts papier";
 
-    Der Messbereich verwendet dieselben
-    Maße wie eine echte Buchseite.
-  */
+  rechteSeite.innerHTML =
+    seitenHTML(rechtsIndex);
 
-  function messbereichAnpassen() {
-    const breite = buch.clientWidth / 2;
-    const hoehe = buch.clientHeight;
+  zurueckButton.disabled =
+    aktuelleDoppelseite === 0;
+}
 
-    messbereich.style.width = breite + "px";
-    messbereich.style.height = hoehe + "px";
+/*
+  BILDER VORLADEN
 
-    messinhalt.style.width = "100%";
-    messinhalt.style.height = "100%";
-  }
+  Vor der Seitenberechnung werden
+  die Bilddateien geladen.
+*/
 
-  function passtAufSeite(html) {
-    messinhalt.innerHTML = html;
+async function bilderVorladen() {
+  const dateien = [];
 
-    /*
-      Unten bleibt Platz für die Seitenzahl.
-    */
-
-    const paddingOben =
-      parseFloat(getComputedStyle(messinhalt).paddingTop);
-
-    const paddingUnten =
-      parseFloat(getComputedStyle(messinhalt).paddingBottom);
-
-    const verfuegbar =
-      messinhalt.clientHeight -
-      paddingOben -
-      paddingUnten -
-      28;
-
-    const elemente = [...messinhalt.children];
-
-    if (elemente.length === 0) return true;
-
-    const letztes = elemente[elemente.length - 1];
-
-    const start =
-      messinhalt.getBoundingClientRect().top +
-      paddingOben;
-
-    const ende =
-      letztes.getBoundingClientRect().bottom;
-
-    return ende - start <= verfuegbar;
-  }
-
-  /*
-    TEXT IN WÖRTER AUFTEILEN
-
-    Wenn ein Absatz nicht mehr passt,
-    wird er an einer Wortgrenze geteilt.
-  */
-
-  function textAufteilen(text, kopf, bisher) {
-    const woerter = text.trim().split(/\s+/);
-
-    let links = 0;
-    let rechts = woerter.length;
-    let besteAnzahl = 0;
-
-    while (links <= rechts) {
-      const mitte = Math.floor((links + rechts) / 2);
-
-      const teil = woerter
-        .slice(0, mitte)
-        .join(" ");
-
-      const probe =
-        kopf +
-        bisher +
-        `<p>${htmlSicher(teil)}</p>`;
-
-      if (passtAufSeite(probe)) {
-        besteAnzahl = mitte;
-        links = mitte + 1;
-      } else {
-        rechts = mitte - 1;
-      }
-    }
-
-    return {
-      passend: woerter
-        .slice(0, besteAnzahl)
-        .join(" "),
-      rest: woerter
-        .slice(besteAnzahl)
-        .join(" ")
-    };
-  }
-
-  /*
-    EINEN EINTRAG AUF MEHRERE
-    BUCHSEITEN VERTEILEN
-  */
-
-  function eintragAufteilen(eintrag) {
-    let ergebnis = [];
-    let fortsetzung = false;
-
-    let kopf = kopfHTML(eintrag, false);
-    let inhalt = "";
-
-    function seiteAbschliessen() {
-      if (!inhalt && !kopf) return;
-
-      ergebnis.push(kopf + inhalt);
-
-      fortsetzung = true;
-      kopf = kopfHTML(eintrag, true);
-      inhalt = "";
-    }
-
+  for (const eintrag of eintraege) {
     for (const block of eintrag.inhalt) {
+      if (
+        block.typ === "bild" &&
+        block.datei
+      ) {
+        dateien.push(block.datei);
+      }
+    }
+  }
 
-      if (block.typ === "bild") {
-        const bild = blockHTML(block);
+  await Promise.all(
+    [...new Set(dateien)].map(datei => {
+      return new Promise(resolve => {
+        const bild = new Image();
 
-        if (passtAufSeite(kopf + inhalt + bild)) {
-          inhalt += bild;
-        } else {
-          seiteAbschliessen();
+        bild.onload = resolve;
+        bild.onerror = resolve;
 
-          /*
-            Das Bild bleibt vollständig
-            auf der nächsten Seite.
-          */
+        bild.src = datei;
 
-          inhalt += bild;
+        if (bild.complete) {
+          resolve();
         }
+      });
+    })
+  );
+}
 
-        continue;
-      }
+/* BUCH ÖFFNEN */
 
-      let restText = block.text.trim();
+function buchOeffnen() {
+  buchbutton.style.display = "none";
+  hinweis.style.display = "none";
+  startbild.style.display = "none";
 
-      while (restText.length > 0) {
-        const ganzerAbsatz =
-          `<p>${htmlSicher(restText)}</p>`;
+  video.style.display = "block";
+  video.currentTime = 0;
 
-        if (
-          passtAufSeite(
-            kopf + inhalt + ganzerAbsatz
-          )
-        ) {
-          inhalt += ganzerAbsatz;
-          restText = "";
-          break;
-        }
+  video.play().catch(() => {
+    video.controls = true;
+  });
+}
 
-        const teilung = textAufteilen(
-          restText,
-          kopf,
-          inhalt
-        );
+video.addEventListener("ended", () => {
+  video.style.display = "none";
+  offenesbuch.style.display = "block";
+  seitenklick.style.display = "block";
+});
 
-        if (teilung.passend) {
-          inhalt +=
-            `<p>${htmlSicher(teilung.passend)}</p>`;
+/* LESEMODUS ÖFFNEN */
 
-          restText = teilung.rest;
-          seiteAbschliessen();
-        } else {
-          if (inhalt) {
-            seiteAbschliessen();
-          } else {
-            /*
-              Schutz vor Endlosschleifen,
-              falls eine Seite extrem klein ist.
-            */
-
-            const erstesWort =
-              restText.split(/\s+/)[0];
-
-            inhalt +=
-              `<p>${htmlSicher(erstesWort)}</p>`;
-
-            restText =
-              restText.slice(erstesWort.length).trim();
-
-            seiteAbschliessen();
-          }
-        }
-      }
-    }
-
-    if (inhalt || ergebnis.length === 0) {
-      ergebnis.push(kopf + inhalt);
-    }
-
-    return ergebnis;
+async function lesemodusOeffnen() {
+  if (animationLaeuft) {
+    return;
   }
 
-  /*
-    ALLE BUCHSEITEN BERECHNEN
+  lesemodus.style.display = "flex";
 
-    Seite 1 ist immer der Steckbrief.
-    Danach folgen die Tagebucheinträge.
-  */
+  await bilderVorladen();
 
-  function alleSeitenBerechnen() {
-    messbereichAnpassen();
-
-    const neueSeiten = [
-      {
-        typ: "steckbrief",
-        html: ""
-      }
-    ];
-
-    for (const eintrag of eintraege) {
-      const teile = eintragAufteilen(eintrag);
-
-      for (const teil of teile) {
-        neueSeiten.push({
-          typ: "text",
-          html: teil
-        });
-      }
-    }
-
-    seiten = neueSeiten;
+  if (document.fonts) {
+    await document.fonts.ready;
   }
 
-  /*
-    SEITENINHALT MIT SEITENZAHL
-  */
+  alleSeitenBerechnen();
 
-  function seitenHTML(seitenIndex) {
-    const seite = seiten[seitenIndex];
+  aktuelleDoppelseite = 0;
+  seitenAnzeigen();
 
-    if (!seite) return "";
+  requestAnimationFrame(() => {
+    lesemodus.classList.add("aktiv");
+  });
+}
 
-    if (seite.typ === "steckbrief") {
-      return "";
-    }
+/* LESEMODUS SCHLIESSEN */
 
-    return `
-      <div class="seiteninhalt">
-        ${seite.html}
-        <span class="seitenzahl">
-          ${seitenIndex + 1}
-        </span>
-      </div>
-    `;
+function lesemodusSchliessen() {
+  if (animationLaeuft) {
+    return;
   }
 
-  function linkeIndex(doppelseite) {
-    return doppelseite * 2;
+  lesemodus.classList.remove("aktiv");
+
+  setTimeout(() => {
+    lesemodus.style.display = "none";
+  }, 600);
+}
+
+/* VORWÄRTSBLÄTTERN */
+
+function vorblattern() {
+  if (animationLaeuft) {
+    return;
   }
 
-  function rechteIndex(doppelseite) {
-    return doppelseite * 2 + 1;
+  if (
+    aktuelleDoppelseite >=
+    anzahlDoppelseiten() - 1
+  ) {
+    return;
   }
 
-  function anzahlDoppelseiten() {
-    return Math.ceil(seiten.length / 2);
-  }
+  animationLaeuft = true;
 
-  function seitenAnzeigen() {
-    const linksIndex =
-      linkeIndex(aktuelleDoppelseite);
+  const naechsteSeite =
+    aktuelleDoppelseite + 1;
 
-    const rechtsIndex =
-      rechteIndex(aktuelleDoppelseite);
+  const alterLinkerIndex =
+    linkeIndex(aktuelleDoppelseite);
 
-    const links = seiten[linksIndex];
+  const alterRechterIndex =
+    rechteIndex(aktuelleDoppelseite);
 
-    if (links && links.typ === "steckbrief") {
-      linkeSeite.className =
-        "buchseite links steckbrief-seite";
-      linkeSeite.innerHTML = "";
-    } else {
-      linkeSeite.className =
-        "buchseite links papier";
+  const neuerLinkerIndex =
+    linkeIndex(naechsteSeite);
 
-      linkeSeite.innerHTML =
-        seitenHTML(linksIndex);
-    }
+  const alteLinkeSeite =
+    seiten[alterLinkerIndex];
 
-    rechteSeite.className =
-      "buchseite rechts papier";
-
-    rechteSeite.innerHTML =
-      seitenHTML(rechtsIndex);
-
-    zurueckButton.disabled =
-      aktuelleDoppelseite === 0;
-  }
-
-  /*
-    BILDER VOR DER AUFTEILUNG LADEN
-
-    So sind die Bildgrößen bekannt,
-    bevor die Seiten berechnet werden.
-  */
-
-  async function bilderVorladen() {
-    const dateien = [];
-
-    for (const eintrag of eintraege) {
-      for (const block of eintrag.inhalt) {
-        if (block.typ === "bild" && block.datei) {
-          dateien.push(block.datei);
-        }
-      }
-    }
-
-    await Promise.all(
-      [...new Set(dateien)].map(datei => {
-        return new Promise(resolve => {
-          const bild = new Image();
-
-          bild.onload = resolve;
-          bild.onerror = resolve;
-
-          bild.src = datei;
-
-          if (bild.complete) {
-            resolve();
-          }
-        });
-      })
+  abdeckungLinks.className =
+    "seitenabdeckung links " +
+    (
+      alteLinkeSeite?.typ === "steckbrief"
+        ? "steckbrief-seite"
+        : "papier"
     );
-  }
 
-  /* BUCH ÖFFNEN */
+  abdeckungLinks.innerHTML =
+    seitenHTML(alterLinkerIndex);
 
-  function buchOeffnen() {
-    buchbutton.style.display = "none";
-    hinweis.style.display = "none";
-    startbild.style.display = "none";
+  abdeckungLinks.style.display = "block";
 
-    video.style.display = "block";
-    video.currentTime = 0;
+  blattVorne.innerHTML =
+    seitenHTML(alterRechterIndex);
 
-    video.play().catch(() => {
-      video.controls = true;
-    });
-  }
+  blattHinten.innerHTML =
+    seitenHTML(neuerLinkerIndex);
 
-  video.addEventListener("ended", () => {
-    video.style.display = "none";
-    offenesbuch.style.display = "block";
-    seitenklick.style.display = "block";
+  aktuelleDoppelseite = naechsteSeite;
+  seitenAnzeigen();
+
+  blatt.style.transition = "none";
+  blatt.style.display = "block";
+  blatt.classList.remove("umgeblattert");
+
+  void blatt.offsetWidth;
+
+  blatt.style.transition =
+    "transform 1.15s cubic-bezier(.45,.05,.3,1)";
+
+  requestAnimationFrame(() => {
+    blatt.classList.add("umgeblattert");
   });
 
-  /* LESEMODUS ÖFFNEN */
+  setTimeout(() => {
+    abdeckungLinks.style.display = "none";
+  }, BLATTER_DAUER / 2);
 
-  async function lesemodusOeffnen() {
-    if (animationLaeuft) return;
+  setTimeout(() => {
+    blatt.style.display = "none";
+    blatt.classList.remove("umgeblattert");
+    animationLaeuft = false;
+  }, BLATTER_DAUER + 50);
+}
 
-    lesemodus.style.display = "flex";
+/* RÜCKWÄRTSBLÄTTERN */
 
-    await bilderVorladen();
+function zurueckblattern() {
+  if (animationLaeuft) {
+    return;
+  }
 
-    if (document.fonts) {
-      await document.fonts.ready;
+  if (aktuelleDoppelseite === 0) {
+    return;
+  }
+
+  animationLaeuft = true;
+
+  const vorherigeSeite =
+    aktuelleDoppelseite - 1;
+
+  const alterRechterIndex =
+    rechteIndex(aktuelleDoppelseite);
+
+  const alterLinkerIndex =
+    linkeIndex(aktuelleDoppelseite);
+
+  const vorherigerRechterIndex =
+    rechteIndex(vorherigeSeite);
+
+  abdeckungRechts.className =
+    "seitenabdeckung rechts papier";
+
+  abdeckungRechts.innerHTML =
+    seitenHTML(alterRechterIndex);
+
+  abdeckungRechts.style.display = "block";
+
+  blattVorne.innerHTML =
+    seitenHTML(vorherigerRechterIndex);
+
+  blattHinten.innerHTML =
+    seitenHTML(alterLinkerIndex);
+
+  blatt.style.transition = "none";
+  blatt.style.display = "block";
+  blatt.classList.add("umgeblattert");
+
+  aktuelleDoppelseite = vorherigeSeite;
+  seitenAnzeigen();
+
+  void blatt.offsetWidth;
+
+  blatt.style.transition =
+    "transform 1.15s cubic-bezier(.45,.05,.3,1)";
+
+  requestAnimationFrame(() => {
+    blatt.classList.remove("umgeblattert");
+  });
+
+  setTimeout(() => {
+    abdeckungRechts.style.display = "none";
+  }, BLATTER_DAUER / 2);
+
+  setTimeout(() => {
+    blatt.style.display = "none";
+    animationLaeuft = false;
+  }, BLATTER_DAUER + 50);
+}
+
+/*
+  BEI ÄNDERUNG DER FENSTERGRÖSSE
+  SEITEN NEU BERECHNEN
+*/
+
+let resizeTimer;
+
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+
+  resizeTimer = setTimeout(() => {
+    if (
+      !lesemodus.classList.contains("aktiv") ||
+      animationLaeuft
+    ) {
+      return;
     }
 
     alleSeitenBerechnen();
 
-    aktuelleDoppelseite = 0;
-    seitenAnzeigen();
-
-    requestAnimationFrame(() => {
-      lesemodus.classList.add("aktiv");
-    });
-  }
-
-  /* LESEMODUS SCHLIESSEN */
-
-  function lesemodusSchliessen() {
-    if (animationLaeuft) return;
-
-    lesemodus.classList.remove("aktiv");
-
-    setTimeout(() => {
-      lesemodus.style.display = "none";
-    }, 600);
-  }
-
-  /*
-    VORWÄRTSBLÄTTERN
-  */
-
-  function vorblattern() {
-    if (animationLaeuft) return;
-
-    if (
-      aktuelleDoppelseite >=
+    aktuelleDoppelseite = Math.min(
+      aktuelleDoppelseite,
       anzahlDoppelseiten() - 1
-    ) return;
+    );
 
-    animationLaeuft = true;
-
-    const naechsteSeite =
-      aktuelleDoppelseite + 1;
-
-    const alterLinkerIndex =
-      linkeIndex(aktuelleDoppelseite);
-
-    const alterRechterIndex =
-      rechteIndex(aktuelleDoppelseite);
-
-    const neuerLinkerIndex =
-      linkeIndex(naechsteSeite);
-
-    const alteLinkeSeite =
-      seiten[alterLinkerIndex];
-
-    abdeckungLinks.className =
-      "seitenabdeckung links " +
-      (
-        alteLinkeSeite?.typ === "steckbrief"
-          ? "steckbrief-seite"
-          : "papier"
-      );
-
-    abdeckungLinks.innerHTML =
-      seitenHTML(alterLinkerIndex);
-
-    abdeckungLinks.style.display = "block";
-
-    blattVorne.innerHTML =
-      seitenHTML(alterRechterIndex);
-
-    blattHinten.innerHTML =
-      seitenHTML(neuerLinkerIndex);
-
-    aktuelleDoppelseite = naechsteSeite;
     seitenAnzeigen();
+  }, 250);
+});
 
-    blatt.style.transition = "none";
-    blatt.style.display = "block";
-    blatt.classList.remove("umgeblattert");
-
-    void blatt.offsetWidth;
-
-    blatt.style.transition =
-      "transform 1.15s cubic-bezier(.45,.05,.3,1)";
-
-    requestAnimationFrame(() => {
-      blatt.classList.add("umgeblattert");
-    });
-
-    setTimeout(() => {
-      abdeckungLinks.style.display = "none";
-    }, BLATTER_DAUER / 2);
-
-    setTimeout(() => {
-      blatt.style.display = "none";
-      blatt.classList.remove("umgeblattert");
-      animationLaeuft = false;
-    }, BLATTER_DAUER + 50);
-  }
-
-  /*
-    RÜCKWÄRTSBLÄTTERN
-  */
-
-  function zurueckblattern() {
-    if (animationLaeuft) return;
-    if (aktuelleDoppelseite === 0) return;
-
-    animationLaeuft = true;
-
-    const vorherigeSeite =
-      aktuelleDoppelseite - 1;
-
-    const alterRechterIndex =
-      rechteIndex(aktuelleDoppelseite);
-
-    const alterLinkerIndex =
-      linkeIndex(aktuelleDoppelseite);
-
-    const vorherigerRechterIndex =
-      rechteIndex(vorherigeSeite);
-
-    abdeckungRechts.className =
-      "seitenabdeckung rechts papier";
-
-    abdeckungRechts.innerHTML =
-      seitenHTML(alterRechterIndex);
-
-    abdeckungRechts.style.display = "block";
-
-    blattVorne.innerHTML =
-      seitenHTML(vorherigerRechterIndex);
-
-    blattHinten.innerHTML =
-      seitenHTML(alterLinkerIndex);
-
-    blatt.style.transition = "none";
-    blatt.style.display = "block";
-    blatt.classList.add("umgeblattert");
-
-    aktuelleDoppelseite = vorherigeSeite;
-    seitenAnzeigen();
-
-    void blatt.offsetWidth;
-
-    blatt.style.transition =
-      "transform 1.15s cubic-bezier(.45,.05,.3,1)";
-
-    requestAnimationFrame(() => {
-      blatt.classList.remove("umgeblattert");
-    });
-
-    setTimeout(() => {
-      abdeckungRechts.style.display = "none";
-    }, BLATTER_DAUER / 2);
-
-    setTimeout(() => {
-      blatt.style.display = "none";
-      animationLaeuft = false;
-    }, BLATTER_DAUER + 50);
-  }
-
-  /*
-    BEI ÄNDERUNG DER FENSTERGRÖSSE
-    SEITEN NEU BERECHNEN
-  */
-
-  let resizeTimer;
-
-  window.addEventListener("resize", () => {
-    clearTimeout(resizeTimer);
-
-    resizeTimer = setTimeout(() => {
-      if (
-        !lesemodus.classList.contains("aktiv") ||
-        animationLaeuft
-      ) {
-        return;
-      }
-
-      alleSeitenBerechnen();
-
-      aktuelleDoppelseite = Math.min(
-        aktuelleDoppelseite,
-        anzahlDoppelseiten() - 1
-      );
-
-      seitenAnzeigen();
-    }, 250);
-  });
 </script>
-
 </body>
 </html>
