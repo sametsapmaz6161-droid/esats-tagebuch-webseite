@@ -252,7 +252,7 @@ body {
 }
 
 .bildunterschrift {
-  font-size: 12px !important;
+  font-size: clamp(14px, 1.12vw, 18px) !important;
   font-style: italic;
   text-align: center;
   opacity: .75;
@@ -261,7 +261,7 @@ body {
 
 .bildgruppe { margin: 12px 0 20px; break-inside: avoid; }
 .bildgruppe .tagebuchbild { margin: 0 auto 8px; }
-.bildgruppe .bildunterschrift { margin: 0 !important; font-size: 11px !important; line-height: 1.4; }
+.bildgruppe .bildunterschrift { margin: 0 !important; font-size: clamp(14px, 1.12vw, 18px) !important; line-height: 1.5; }
 .tagesabschluss { margin-top: 20px; margin-bottom: 14px; }
 .tagesabschluss p { margin: 0 0 12px; }
 .tagesabschluss .unterschrift { text-align: right; font-size: clamp(14px, 1.2vw, 19px); font-style: italic; color: #9a5760; margin: 0; }
@@ -575,8 +575,12 @@ body {
 .hinweis.weiter-hinweis { font-size:clamp(16px,2vw,29px); bottom:5%; }
 .lese-start-hinweis { position:absolute; right:4%; bottom:5%; z-index:17; color:#ffe6b7; background:rgba(53,31,20,.91); border:1px solid #c9a577; border-radius:14px; padding:12px 18px; font-size:clamp(13px,1.35vw,20px); box-shadow:0 5px 20px #0006; pointer-events:none; animation:pulsieren 2.5s infinite; }
 .lese-start-hinweis[hidden] { display:none; }
-.info-knopf { position:absolute; right:3%; top:3%; z-index:30; width:42px; height:42px; border-radius:50%; border:2px solid #b18a54; color:#633e23; background:#fff1d3; box-shadow:0 2px 12px #0004; font:bold 27px Georgia,serif; cursor:pointer; }
+.info-knopf { position:absolute; right:3%; top:3%; z-index:30; width:42px; height:42px; padding:0; display:flex; align-items:center; justify-content:center; line-height:1; border-radius:50%; border:2px solid #b18a54; color:#633e23; background:#fff1d3; box-shadow:0 2px 12px #0004; font:bold 27px Georgia,serif; cursor:pointer; }
 .info-knopf[hidden] { display:none; }
+.info-knopf.info-pflicht { animation:infoAufmerksamkeit 1.4s ease-in-out infinite; box-shadow:0 0 0 5px #ffe5a077,0 2px 14px #0005; }
+@keyframes infoAufmerksamkeit { 0%,100% { box-shadow:0 0 0 2px #ffe5a055,0 2px 12px #0004; } 50% { box-shadow:0 0 0 10px #ffe5a088,0 2px 20px #0005; } }
+.info-pflicht-hinweis { position:absolute; z-index:29; right:calc(3% + 48px); top:3%; background:#fff1d3; color:#633e23; border:2px solid #b18a54; border-radius:12px; padding:10px 14px; font: bold clamp(13px,1.15vw,17px) Georgia,serif; box-shadow:0 3px 12px #0004; }
+.info-pflicht-hinweis[hidden] { display:none; }
 .info-knopf:hover,.info-knopf:focus-visible { background:#ffe0a2; transform:scale(1.07); }
 .info-blase { position:absolute; right:3%; top:calc(3% + 50px); z-index:31; width:min(365px,84vw); max-height:70%; overflow:auto; box-sizing:border-box; padding:19px 21px; border-radius:14px; border:2px solid #b68c56; background:#fff1d4; color:#52351f; box-shadow:0 12px 35px #0008; font:clamp(13px,1.1vw,16px)/1.5 Georgia,serif; }
 .info-blase[hidden] { display:none; }
@@ -686,7 +690,8 @@ body {
     <div class="buchmitte"></div>
 
     <div id="leseStartHinweis" class="lese-start-hinweis" hidden>Zum Weiterlesen auf die rechte Seite klicken →</div>
-    <button type="button" id="infoKnopf" class="info-knopf" aria-label="Tipps zum Lesen anzeigen" aria-expanded="false" aria-controls="infoBlase" hidden>ⓘ</button>
+    <div id="infoPflichtHinweis" class="info-pflicht-hinweis" hidden>Bitte zuerst auf das ⓘ klicken →</div>
+    <button type="button" id="infoKnopf" class="info-knopf" aria-label="Tipps zum Lesen anzeigen" aria-expanded="false" aria-controls="infoBlase" hidden>i</button>
     <div id="infoBlase" class="info-blase" role="region" aria-label="Tipps zur Bedienung" hidden>
       <strong>📖 So liest du das Tagebuch</strong>
       <p>→ <b>Klicke auf die rechte Buchseite, um weiterzukommen.</b></p>
@@ -4272,8 +4277,11 @@ function seitenAnzeigen() {
 
   kapitelAktivMarkieren();
   const ersteDoppelseite = aktuelleDoppelseite === 0;
-  document.getElementById("leseStartHinweis").hidden = !ersteDoppelseite;
+  const infoPflicht = infoHilfeNochPflicht() && ersteDoppelseite;
+  document.getElementById("leseStartHinweis").hidden = !ersteDoppelseite || infoPflicht;
+  document.getElementById("infoPflichtHinweis").hidden = !infoPflicht;
   const infoKnopf = document.getElementById("infoKnopf");
+  infoKnopf.classList.toggle("info-pflicht", infoPflicht);
   infoKnopf.hidden = !ersteDoppelseite;
   if (!ersteDoppelseite) {
     document.getElementById("infoBlase").hidden = true;
@@ -4393,9 +4401,29 @@ function lesemodusSchliessen() {
   }, 600);
 }
 
+/* Einmalige Einführung pro Browser. Ab Tag 2 entfällt die Pflicht automatisch. */
+const INFO_GESEHEN_SCHLUESSEL = "esats-tagebuch-info-gesehen-v1";
+let infoInDieserSitzungGesehen = false;
+function infoHilfeNochPflicht() {
+  if (freieKapitel() >= 2 || infoInDieserSitzungGesehen) return false;
+  try { return localStorage.getItem(INFO_GESEHEN_SCHLUESSEL) !== "ja"; }
+  catch (e) { return true; }
+}
+function infoHilfeAlsGesehenMarkieren() {
+  infoInDieserSitzungGesehen = true;
+  try { localStorage.setItem(INFO_GESEHEN_SCHLUESSEL, "ja"); } catch (e) {}
+  document.getElementById("infoPflichtHinweis").hidden = true;
+  document.getElementById("infoKnopf").classList.remove("info-pflicht");
+  document.getElementById("leseStartHinweis").hidden = false;
+}
+
 /* VORWÄRTSBLÄTTERN */
 
 function vorblattern() {
+  if (aktuelleDoppelseite === 0 && infoHilfeNochPflicht()) {
+    document.getElementById("infoKnopf").focus();
+    return;
+  }
   if (animationLaeuft) {
     return;
   }
@@ -4618,6 +4646,7 @@ function kapitelRegisterSchliessen() {
   kapitelButton.setAttribute("aria-expanded", "false");
 }
 function kapitelSpringen(index) {
+  if (infoHilfeNochPflicht() && aktuelleDoppelseite === 0) { document.getElementById("infoKnopf").focus(); return; }
   if (animationLaeuft || !kapitelStartseiten[index]) return;
   if (index >= freieKapitel()) { kapitelRegisterSchliessen(); sperreOeffnen(); return; }
   aktuelleDoppelseite = Math.floor(kapitelStartseiten[index] / 2);
@@ -4733,6 +4762,7 @@ const infoKnopf = document.getElementById("infoKnopf");
 const infoBlase = document.getElementById("infoBlase");
 infoKnopf.addEventListener("click", (event) => {
   event.stopPropagation();
+  if (infoHilfeNochPflicht()) infoHilfeAlsGesehenMarkieren();
   infoBlase.hidden = !infoBlase.hidden;
   infoKnopf.setAttribute("aria-expanded", String(!infoBlase.hidden));
 });
