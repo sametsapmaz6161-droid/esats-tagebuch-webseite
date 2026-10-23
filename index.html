@@ -528,6 +528,20 @@ body {
 .steuerung .register-eintrag:focus-visible { outline: 2px solid #714322; outline-offset: 2px; }
 @media(max-width:650px) { .kapitel-register { left: -3px; width: min(340px, 90vw); max-height: 55dvh; } .register-liste { gap: 4px; } .steuerung .register-eintrag { font-size: 12px; padding: 8px 6px; } }
 
+
+/* TÄGLICHE KAPITELFREISCHALTUNG */
+.sperrseite { display:flex; flex-direction:column; align-items:center; justify-content:center; height:88%; text-align:center; gap:18px; }
+.sperrseite h2 { font-size:clamp(16px,1.5vw,23px); margin:0; }
+.sperrseite p { max-width:300px; margin:0; }
+.schlosszeichnung { width:74px; height:84px; color:#79583e; }
+.sperrhinweis { position:fixed; z-index:100001; inset:0; display:none; align-items:center; justify-content:center; background:#140d0acc; backdrop-filter:blur(7px); padding:20px; }
+.sperrhinweis.offen { display:flex; }
+.sperrkarte { position:relative; width:min(440px,95vw); padding:35px 28px; background:#fbf1db; border:3px double #8d704e; border-radius:9px; box-shadow:0 18px 70px #0009; text-align:center; color:#714322; font-family:Georgia,serif; }
+.sperrkarte .schlosszeichnung { display:block; margin:0 auto 12px; }
+.sperrkarte h2 { font-weight:normal; }
+.sperrkarte button { background:#392117; color:#ffe0ad; padding:11px 23px; border:1px solid #c8a16d; border-radius:7px; cursor:pointer; }
+.steuerung .register-eintrag.gesperrt { opacity:.53; }
+
 </style>
 </head>
 
@@ -676,6 +690,15 @@ body {
     <p id="videoOverlayText"></p>
     <a id="videoOriginalLink" href="#" target="_blank" rel="noopener noreferrer">Video direkt in Google Drive öffnen</a>
   </div>
+</div>
+
+<div id="sperrHinweis" class="sperrhinweis" role="dialog" aria-modal="true" aria-label="Nächstes Kapitel gesperrt" aria-hidden="true">
+ <div class="sperrkarte">
+  <svg class="schlosszeichnung" viewBox="0 0 90 100" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 44V28 Q23 8 45 8 Q67 8 66 28V44 M33 44V29 Q33 19 45 19 Q57 19 57 29V44" stroke-width="3"/><path d="M17 43 Q45 39 73 43 L74 88 Q46 94 16 88 Z" stroke-width="3"/><path d="M45 57 Q35 58 41 68 L39 77 L51 77 L49 68 Q55 59 45 57 Z" stroke-width="2"/></svg>
+  <h2>Dieses Kapitel ist noch verschlossen</h2>
+  <p id="sperrText">Die Story geht morgen um 20 Uhr weiter.</p>
+  <button type="button" onclick="sperreSchliessen()">Zurück zum Tagebuch</button>
+ </div>
 </div>
 
 <div id="messbereich" class="messbereich">
@@ -3872,7 +3895,7 @@ function eintragAufteilen(eintrag) {
   let kopf = kopfHTML(eintrag, false);
   let inhalt = "";
 
-  const abschluss = `<div class="tagesabschluss"><p>Bis morgen, liebes Tagebuch.</p><p class="unterschrift">In Liebe, Esat ♡</p></div>`;
+  const abschluss = eintrag === eintraege[eintraege.length - 1] ? "" : `<div class="tagesabschluss"><p>Bis morgen, liebes Tagebuch.</p><p class="unterschrift">In Liebe, Esat ♡</p></div>`;
 
   function seiteAbschliessen() {
     if (inhalt) ergebnis.push(kopf + inhalt);
@@ -4018,9 +4041,77 @@ function alleSeitenBerechnen() {
   kapitelRegisterFuellen();
 }
 
+
+/* Freischaltung ab dem ersten Besuch: Kapitel 1 sofort, Kapitel 2 am
+   folgenden Kalendertag um 20 Uhr, weitere Kapitel jeweils täglich um 20 Uhr.
+   Hinweis: rein browserseitige Freischaltung, kein manipulationssicherer Schutz. */
+const START_SCHLUESSEL = "esats-tagebuch-start-v1";
+function startDatum() {
+  let wert;
+  try { wert = localStorage.getItem(START_SCHLUESSEL); } catch(e) {}
+  if (wert && /^\d{4}-\d{2}-\d{2}$/.test(wert)) return wert;
+  const heute = new Date();
+  wert = `${heute.getFullYear()}-${String(heute.getMonth()+1).padStart(2,"0")}-${String(heute.getDate()).padStart(2,"0")}`;
+  try { localStorage.setItem(START_SCHLUESSEL, wert); } catch(e) {}
+  return wert;
+}
+const ERSTER_BESUCH = startDatum();
+function freischaltDatum(kapitelIndex) {
+  const [j,m,t] = ERSTER_BESUCH.split("-").map(Number);
+  return new Date(j, m-1, t + kapitelIndex, 20, 0, 0, 0);
+}
+/* Entwickler-Testmodus: ?testmodus=an / ?testmodus=aus in der URL.
+   Einstellung gilt nur für diesen Browser und bleibt nach Neuladen erhalten. */
+const TESTMODUS_SCHLUESSEL = "esats-tagebuch-testmodus-v1";
+const testParameter = new URLSearchParams(window.location.search).get("testmodus");
+if (testParameter === "an" || testParameter === "aus") {
+  try { localStorage.setItem(TESTMODUS_SCHLUESSEL, testParameter === "an" ? "1" : "0"); } catch(e) {}
+}
+function testmodusAktiv() {
+  try { return localStorage.getItem(TESTMODUS_SCHLUESSEL) === "1"; } catch(e) { return testParameter === "an"; }
+}
+function freieKapitel() {
+  if (testmodusAktiv()) return eintraege.length;
+  let frei = 1;
+  while (frei < eintraege.length && Date.now() >= freischaltDatum(frei).getTime()) frei++;
+  return frei;
+}
+function naechsteFreischaltung() {
+  const frei = freieKapitel();
+  if (frei >= eintraege.length) return "Alle Kapitel sind freigeschaltet.";
+  const datum = freischaltDatum(frei);
+  const morgen = new Date(); morgen.setDate(morgen.getDate()+1);
+  const istMorgen = datum.toDateString() === morgen.toDateString();
+  return `Die Story ist ${istMorgen ? "morgen" : "am " + datum.toLocaleDateString("de-DE")} um 20 Uhr verfügbar.`;
+}
+function schlossSVG() {
+ return `<svg class="schlosszeichnung" viewBox="0 0 90 100" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 44V28 Q23 8 45 8 Q67 8 66 28V44 M33 44V29 Q33 19 45 19 Q57 19 57 29V44" stroke-width="3"/><path d="M17 43 Q45 39 73 43 L74 88 Q46 94 16 88 Z" stroke-width="3"/><path d="M45 57 Q35 58 41 68 L39 77 L51 77 L49 68 Q55 59 45 57 Z" stroke-width="2"/></svg>`;
+}
+function sperrVorschau() {
+ const index = freieKapitel();
+ if (index >= eintraege.length) return "";
+ return `<div class="seiteninhalt"><div class="sperrseite"><span class="fortsetzung">Als Nächstes</span><h2>${htmlSicher(eintraege[index].titel)}</h2>${schlossSVG()}<p>${naechsteFreischaltung()}</p></div></div>`;
+}
+function sperreOeffnen() {
+ document.getElementById("sperrText").textContent = naechsteFreischaltung();
+ const el = document.getElementById("sperrHinweis"); el.classList.add("offen"); el.setAttribute("aria-hidden","false");
+}
+function sperreSchliessen() {
+ const el = document.getElementById("sperrHinweis"); el.classList.remove("offen"); el.setAttribute("aria-hidden","true");
+}
+function letzteErlaubteDoppelseite() {
+ const frei = freieKapitel();
+ if (frei >= eintraege.length) return anzahlDoppelseiten()-1;
+ return Math.floor(kapitelStartseiten[frei] / 2);
+}
+
 /* SEITENINHALT */
 
 function seitenHTML(seitenIndex) {
+  const frei = freieKapitel();
+  if (frei < eintraege.length && seitenIndex >= kapitelStartseiten[frei]) {
+    return seitenIndex === kapitelStartseiten[frei] ? sperrVorschau() : "";
+  }
   const seite = seiten[seitenIndex];
 
   if (!seite) {
@@ -4208,6 +4299,8 @@ function vorblattern() {
     return;
   }
 
+  if (aktuelleDoppelseite >= letzteErlaubteDoppelseite()) { sperreOeffnen(); return; }
+
   animationLaeuft = true;
 
   const naechsteSeite =
@@ -4378,6 +4471,7 @@ function kapitelRegisterFuellen() {
     taste.dataset.kapitel = String(index);
     taste.textContent = eintrag.titel || `Kapitel ${index + 1}`;
     taste.title = taste.textContent;
+    if (index >= freieKapitel()) { taste.classList.add("gesperrt"); taste.textContent = "🔒 " + taste.textContent; }
     taste.addEventListener("click", () => kapitelSpringen(index));
     kapitelListe.appendChild(taste);
   });
@@ -4407,6 +4501,7 @@ function kapitelRegisterSchliessen() {
 }
 function kapitelSpringen(index) {
   if (animationLaeuft || !kapitelStartseiten[index]) return;
+  if (index >= freieKapitel()) { kapitelRegisterSchliessen(); sperreOeffnen(); return; }
   aktuelleDoppelseite = Math.floor(kapitelStartseiten[index] / 2);
   kapitelRegisterSchliessen();
   blatt.style.display = "none";
@@ -4417,7 +4512,14 @@ function kapitelSpringen(index) {
 document.addEventListener("click", event => {
   if (!event.target.closest("#kapitelAuswahl")) kapitelRegisterSchliessen();
 });
+setInterval(() => {
+  if (!animationLaeuft && lesemodus.classList.contains("aktiv")) {
+    seitenAnzeigen(); kapitelRegisterFuellen();
+  }
+}, 60000);
+
 document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && document.getElementById("sperrHinweis").classList.contains("offen")) { sperreSchliessen(); return; }
   if (event.key === "Escape" && !kapitelRegister.hidden) {
     kapitelRegisterSchliessen(); kapitelButton.focus();
   }
