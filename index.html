@@ -4082,7 +4082,7 @@ function naechsteFreischaltung() {
   const datum = freischaltDatum(frei);
   const morgen = new Date(); morgen.setDate(morgen.getDate()+1);
   const istMorgen = datum.toDateString() === morgen.toDateString();
-  return `Die Story ist ${istMorgen ? "morgen" : "am " + datum.toLocaleDateString("de-DE")} um 20 Uhr verfügbar.`;
+  return `Das nächste Kapitel ist ${istMorgen ? "morgen" : "am " + datum.toLocaleDateString("de-DE")} um 20 Uhr verfügbar.`;
 }
 function schlossSVG() {
  return `<svg class="schlosszeichnung" viewBox="0 0 90 100" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 44V28 Q23 8 45 8 Q67 8 66 28V44 M33 44V29 Q33 19 45 19 Q57 19 57 29V44" stroke-width="3"/><path d="M17 43 Q45 39 73 43 L74 88 Q46 94 16 88 Z" stroke-width="3"/><path d="M45 57 Q35 58 41 68 L39 77 L51 77 L49 68 Q55 59 45 57 Z" stroke-width="2"/></svg>`;
