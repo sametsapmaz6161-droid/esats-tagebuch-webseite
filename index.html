@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Esats Tagebuch ❤️</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { box-sizing: border-box; }
 
     body {
-      min-height: 100vh;
+      margin: 0;
       background: #160d0a;
-      font-family: Georgia, serif;
       overflow: hidden;
+      font-family: Georgia, serif;
     }
 
     .startseite {
@@ -20,7 +20,6 @@
       width: 100vw;
       height: 100dvh;
       overflow: hidden;
-      background: #160d0a;
     }
 
     .bildbereich {
@@ -31,6 +30,7 @@
       aspect-ratio: 16 / 9;
       transform: translate(-50%, -50%);
       overflow: hidden;
+      perspective: 1800px;
     }
 
     .hintergrund, .video, .offenes-buch {
@@ -45,7 +45,7 @@
       display: none;
     }
 
-    .buch {
+    .buchbutton {
       position: absolute;
       left: 33%;
       top: 16%;
@@ -56,10 +56,6 @@
       cursor: pointer;
     }
 
-    .buch:focus-visible {
-      outline: 3px solid #ffc36a;
-    }
-
     .hinweis {
       position: absolute;
       bottom: 4%;
@@ -68,49 +64,139 @@
       color: #ffe0ad;
       font-size: clamp(13px, 1.5vw, 20px);
       text-shadow: 0 2px 8px black;
-      text-align: center;
       white-space: nowrap;
       pointer-events: none;
       animation: pulsieren 2s infinite;
     }
 
     @keyframes pulsieren {
-      0%, 100% { opacity: 0.5; }
+      0%, 100% { opacity: .5; }
       50% { opacity: 1; }
+    }
+
+    /* Umblätterbare Seite auf der rechten Buchhälfte */
+    .seitenbereich {
+      position: absolute;
+      left: 51%;
+      top: 23%;
+      width: 29%;
+      height: 56%;
+      display: none;
+      perspective: 1400px;
+      z-index: 5;
+    }
+
+    .testseite {
+      position: absolute;
+      inset: 0;
+      transform-origin: left center;
+      transform-style: preserve-3d;
+      transition: transform 1.3s ease-in-out;
+      cursor: pointer;
+    }
+
+    .testseite.umgeblattert {
+      transform: rotateY(-175deg);
+    }
+
+    .vorderseite, .rueckseite {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 2px 12px 12px 2px;
+      background: #ead7ac;
+      box-shadow: 2px 2px 10px #0005;
+      padding: 12%;
+      color: #563b2a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .rueckseite {
+      transform: rotateY(180deg);
+      background: #e3cca0;
+    }
+
+    .seitenbereich button {
+      font-family: Georgia, serif;
+    }
+
+    .zurueck {
+      position: absolute;
+      right: 3%;
+      bottom: 5%;
+      display: none;
+      z-index: 10;
+      padding: 10px 18px;
+      border: 1px solid #d5ad75;
+      border-radius: 8px;
+      background: #3c231a;
+      color: #ffe0ad;
+      cursor: pointer;
+    }
+
+    @media (max-width: 650px) {
+      .vorderseite, .rueckseite {
+        font-size: 9px;
+        padding: 6%;
+      }
+      .zurueck {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
     }
   </style>
 </head>
 <body>
+
   <main class="startseite">
     <div class="bildbereich">
-      <img
-        id="startbild"
-        src="startseite.png"
-        alt="Esats geschlossenes Tagebuch"
-        class="hintergrund"
-      >
 
-      <video id="buchvideo" class="video" preload="auto" playsinline>
+      <img id="startbild" class="hintergrund"
+           src="startseite.png" alt="Geschlossenes Tagebuch">
+
+      <video id="buchvideo" class="video"
+             preload="auto" playsinline>
         <source src="buch-oeffnen.mp4" type="video/mp4">
       </video>
 
-      <img
-        id="offenesbuch"
-        src="buch-offen.png"
-        alt="Esats geöffnetes Tagebuch mit Steckbrief"
-        class="offenes-buch"
-      >
+      <img id="offenesbuch" class="offenes-buch"
+           src="buch-offen.png" alt="Geöffnetes Tagebuch">
 
-      <button
-        id="buchbutton"
-        class="buch"
-        aria-label="Tagebuch öffnen"
-        onclick="buchOeffnen()"
-      ></button>
+      <button id="buchbutton" class="buchbutton"
+              aria-label="Tagebuch öffnen"
+              onclick="buchOeffnen()"></button>
 
       <div id="hinweis" class="hinweis">
         Klicke auf das Tagebuch 📖
       </div>
+
+      <div id="seitenbereich" class="seitenbereich">
+        <div id="testseite" class="testseite"
+             onclick="seiteUmblattern()">
+
+          <div class="vorderseite">
+            <h2>Tag 01</h2>
+            <p>Hier beginnt Esats Geschichte ...</p>
+            <small>Zum Umblättern klicken →</small>
+          </div>
+
+          <div class="rueckseite">
+            <h2>Esats Tagebuch ❤️</h2>
+            <p>Die erste Seite wurde umgeblättert!</p>
+          </div>
+
+        </div>
+      </div>
+
+      <button id="zurueck" class="zurueck"
+              onclick="zurueckBlattern()">
+        ↶ Zurückblättern
+      </button>
+
     </div>
   </main>
 
@@ -120,16 +206,17 @@
     const offenesbuch = document.getElementById("offenesbuch");
     const button = document.getElementById("buchbutton");
     const hinweis = document.getElementById("hinweis");
+    const seitenbereich = document.getElementById("seitenbereich");
+    const testseite = document.getElementById("testseite");
+    const zurueck = document.getElementById("zurueck");
 
     function buchOeffnen() {
       button.style.display = "none";
       hinweis.style.display = "none";
-
       video.style.display = "block";
       startbild.style.display = "none";
 
       video.currentTime = 0;
-
       video.play().catch(() => {
         video.controls = true;
       });
@@ -138,7 +225,21 @@
     video.addEventListener("ended", () => {
       video.style.display = "none";
       offenesbuch.style.display = "block";
+      seitenbereich.style.display = "block";
     });
+
+    function seiteUmblattern() {
+      testseite.classList.toggle("umgeblattert");
+      zurueck.style.display =
+        testseite.classList.contains("umgeblattert")
+        ? "block" : "none";
+    }
+
+    function zurueckBlattern() {
+      testseite.classList.remove("umgeblattert");
+      zurueck.style.display = "none";
+    }
   </script>
+
 </body>
 </html>
