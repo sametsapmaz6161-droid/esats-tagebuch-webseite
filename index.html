@@ -79,8 +79,6 @@
     }
   }
 
-  /* KLICK AUF DIE RECHTE BUCHSEITE */
-
   .seitenklick {
     position: absolute;
     left: 52%;
@@ -121,18 +119,13 @@
     transform: scale(1.05);
   }
 
-  /* GROSSES BUCH – NEUE GRÖSSE */
+  /* BUCHGRÖSSE: 90 % HÖHE */
 
   .buch {
     position: relative;
     z-index: 2;
-
-    /* 92 % Bildschirmbreite, maximal 1600 px */
     width: min(92vw, 1600px);
-
-    /* 90 % Bildschirmhöhe */
     height: 90dvh;
-
     display: flex;
     filter: drop-shadow(0 25px 35px #000a);
     transform: scale(.85);
@@ -144,18 +137,18 @@
     transform: scale(1);
   }
 
-  /* BUCHSEITEN */
+  /* GEMEINSAME BUCHSEITEN */
 
   .buchseite {
     position: relative;
     width: 50%;
     height: 100%;
-    color: #563b2a;
-    padding: clamp(15px, 3vw, 50px);
+    color: #49392f;
+    padding: clamp(20px, 3vw, 52px);
     overflow: hidden;
   }
 
-  /* LINKE SEITE: ORIGINALER STECKBRIEF */
+  /* LINKE SEITE: STECKBRIEF BLEIBT UNVERÄNDERT */
 
   .links {
     border-radius: 14px 2px 2px 14px;
@@ -170,34 +163,50 @@
     padding: 0;
   }
 
-  /* RECHTE SEITE: TESTSEITE */
+  /* NEUES CREMEWEISSES PAPIER */
+
+  .papier {
+    background-color: #f7f0df;
+    background-image:
+      radial-gradient(
+        ellipse at 45% 25%,
+        rgba(255, 255, 255, 0.34),
+        transparent 65%
+      ),
+      repeating-linear-gradient(
+        0deg,
+        rgba(113, 87, 59, 0.012) 0px,
+        rgba(113, 87, 59, 0.012) 1px,
+        transparent 1px,
+        transparent 5px
+      ),
+      linear-gradient(
+        90deg,
+        rgba(99, 69, 41, 0.075),
+        transparent 12%,
+        transparent 88%,
+        rgba(99, 69, 41, 0.045)
+      );
+  }
+
+  /* RECHTE BUCHSEITE */
 
   .rechts {
     border-radius: 2px 14px 14px 2px;
-    box-shadow: inset 22px 0 28px -25px #43240e;
-
-    background:
-      repeating-linear-gradient(
-        0deg,
-        transparent 0 32px,
-        #8c694015 33px
-      ),
-      linear-gradient(
-        100deg,
-        #ddc49b,
-        #f3e1b9 15%,
-        #f0ddb5
-      );
+    box-shadow:
+      inset 22px 0 28px -25px #43240e,
+      inset -8px 0 18px -16px #43240e;
   }
 
   .buchseite h1 {
     text-align: center;
-    font-size: clamp(20px, 2.7vw, 40px);
+    font-size: clamp(22px, 2.7vw, 40px);
     margin-bottom: 35px;
+    color: #463429;
   }
 
   .buchseite p {
-    font-size: clamp(13px, 1.4vw, 20px);
+    font-size: clamp(14px, 1.4vw, 20px);
     line-height: 1.8;
   }
 
@@ -219,7 +228,7 @@
     pointer-events: none;
   }
 
-  /* UMBLÄTTERANIMATION */
+  /* UMBLÄTTERBARES BLATT */
 
   .blatt {
     position: absolute;
@@ -242,21 +251,20 @@
     position: absolute;
     inset: 0;
     backface-visibility: hidden;
-
-    background: #efddb7;
-
     border-radius: 2px 12px 12px 2px;
-    padding: clamp(15px, 3vw, 50px);
+    padding: clamp(20px, 3vw, 52px);
 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 
-    color: #563b2a;
+    color: #49392f;
     text-align: center;
 
-    box-shadow: inset 14px 0 25px -22px #321b0d;
+    box-shadow:
+      inset 14px 0 25px -22px #321b0d,
+      inset -7px 0 15px -14px #321b0d;
   }
 
   .blattseite.rueck {
@@ -265,7 +273,21 @@
   }
 
   .blattseite h2 {
-    font-size: clamp(22px, 3vw, 44px);
+    font-size: clamp(24px, 3vw, 44px);
+    font-weight: normal;
+    color: #463429;
+    margin-bottom: 12px;
+  }
+
+  .blattseite p {
+    font-size: clamp(14px, 1.4vw, 20px);
+    line-height: 1.8;
+  }
+
+  .blattseite small {
+    margin-top: 28px;
+    opacity: .65;
+    font-style: italic;
   }
 
   /* STEUERUNG */
@@ -301,7 +323,8 @@
       height: 75dvh;
     }
 
-    .buchseite {
+    .buchseite,
+    .blattseite {
       padding: 12px;
     }
 
@@ -319,7 +342,6 @@
 <body>
 
 <main class="szene">
-
   <div class="bildbereich">
 
     <!-- GESCHLOSSENES TAGEBUCH -->
@@ -369,10 +391,9 @@
     ></button>
 
   </div>
-
 </main>
 
-<!-- GROSSER LESEMODUS -->
+<!-- LESEMODUS -->
 
 <section
   id="lesemodus"
@@ -386,11 +407,11 @@
   <!-- GROSSES TAGEBUCH -->
   <div class="buch">
 
-    <!-- LINKE SEITE: ORIGINALBILD -->
+    <!-- LINKE SEITE: STECKBRIEF -->
     <div class="buchseite links steckbrief-seite"></div>
 
-    <!-- RECHTE SEITE -->
-    <div class="buchseite rechts">
+    <!-- RECHTE SEITE: CREMEWEISSES PAPIER -->
+    <div class="buchseite rechts papier">
       <h1>Tag 01</h1>
       <p>Hier beginnt Esats Geschichte ...</p>
     </div>
@@ -398,20 +419,22 @@
     <!-- BUCHMITTE -->
     <div class="buchmitte"></div>
 
-    <!-- UMBLÄTTERBARE TESTSEITE -->
+    <!-- UMBLÄTTERBARES BLATT -->
     <div
       id="blatt"
       class="blatt"
       onclick="umblattern()"
     >
 
-      <div class="blattseite">
+      <!-- VORDERSEITE -->
+      <div class="blattseite papier">
         <h2>Tag 01</h2>
         <p>Der Anfang einer besonderen Geschichte ...</p>
         <small>Zum Umblättern klicken →</small>
       </div>
 
-      <div class="blattseite rueck">
+      <!-- RÜCKSEITE -->
+      <div class="blattseite rueck papier">
         <h2>Seite 2</h2>
         <p>Hier geht Esats Geschichte weiter ...</p>
       </div>
