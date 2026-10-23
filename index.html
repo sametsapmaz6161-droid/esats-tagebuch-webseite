@@ -5,14 +5,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Esats Tagebuch ❤️</title>
+
 <style>
-  * { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+  }
+
   body {
     margin: 0;
     overflow: hidden;
     background: #160d0a;
     font-family: Georgia, serif;
   }
+
+  /* STARTSEITE */
 
   .szene {
     position: relative;
@@ -30,7 +36,9 @@
     transform: translate(-50%, -50%);
   }
 
-  .hintergrund, .video, .offenes-buch {
+  .hintergrund,
+  .video,
+  .offenes-buch {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -38,7 +46,10 @@
     object-fit: cover;
   }
 
-  .video, .offenes-buch { display: none; }
+  .video,
+  .offenes-buch {
+    display: none;
+  }
 
   .buchbutton {
     position: absolute;
@@ -63,10 +74,13 @@
   }
 
   @keyframes pulsieren {
-    50% { opacity: .45; }
+    50% {
+      opacity: .45;
+    }
   }
 
-  /* Klickfläche auf rechter Buchseite */
+  /* KLICK AUF DIE RECHTE BUCHSEITE */
+
   .seitenklick {
     position: absolute;
     left: 52%;
@@ -79,7 +93,8 @@
     cursor: pointer;
   }
 
-  /* Lesemodus */
+  /* LESEMODUS */
+
   .lesemodus {
     position: fixed;
     inset: 0;
@@ -96,6 +111,8 @@
     opacity: 1;
   }
 
+  /* VERSCHWOMMENER SCHREIBTISCH */
+
   .blur-hintergrund {
     position: absolute;
     inset: -25px;
@@ -103,6 +120,8 @@
     filter: blur(15px) brightness(.5);
     transform: scale(1.05);
   }
+
+  /* GROSSES BUCH */
 
   .buch {
     position: relative;
@@ -120,30 +139,50 @@
     transform: scale(1);
   }
 
+  /* BUCHSEITEN */
+
   .buchseite {
     position: relative;
     width: 50%;
     height: 100%;
-    background:
-      repeating-linear-gradient(
-        0deg,
-        transparent 0 32px,
-        #8c694015 33px
-      ),
-      linear-gradient(100deg, #ddc49b, #f3e1b9 15%, #f0ddb5);
     color: #563b2a;
     padding: clamp(15px, 3vw, 50px);
     overflow: hidden;
   }
+
+  /* LINKE SEITE: ORIGINALER STECKBRIEF */
 
   .links {
     border-radius: 14px 2px 2px 14px;
     box-shadow: inset -22px 0 28px -25px #43240e;
   }
 
+  .steckbrief-seite {
+    background-image: url("steckbrief.png");
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 0;
+  }
+
+  /* RECHTE SEITE: VORLÄUFIGE TESTSEITE */
+
   .rechts {
     border-radius: 2px 14px 14px 2px;
     box-shadow: inset 22px 0 28px -25px #43240e;
+
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 32px,
+        #8c694015 33px
+      ),
+      linear-gradient(
+        100deg,
+        #ddc49b,
+        #f3e1b9 15%,
+        #f0ddb5
+      );
   }
 
   .buchseite h1 {
@@ -157,18 +196,26 @@
     line-height: 1.8;
   }
 
+  /* BUCHMITTE */
+
   .buchmitte {
     position: absolute;
     top: 0;
     left: calc(50% - 8px);
     height: 100%;
     width: 16px;
-    background: linear-gradient(90deg, #67432477, #2b160c77, #67432455);
+    background: linear-gradient(
+      90deg,
+      #67432477,
+      #2b160c77,
+      #67432455
+    );
     z-index: 5;
     pointer-events: none;
   }
 
-  /* Umblätteranimation */
+  /* UMBLÄTTERANIMATION */
+
   .blatt {
     position: absolute;
     top: 0;
@@ -190,15 +237,20 @@
     position: absolute;
     inset: 0;
     backface-visibility: hidden;
+
     background: #efddb7;
+
     border-radius: 2px 12px 12px 2px;
     padding: clamp(15px, 3vw, 50px);
+
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
     color: #563b2a;
     text-align: center;
+
     box-shadow: inset 14px 0 25px -22px #321b0d;
   }
 
@@ -210,6 +262,8 @@
   .blattseite h2 {
     font-size: clamp(22px, 3vw, 44px);
   }
+
+  /* STEUERUNG */
 
   .steuerung {
     position: absolute;
@@ -230,77 +284,150 @@
     cursor: pointer;
   }
 
+  .steuerung button:hover {
+    background: #593628;
+  }
+
+  /* MOBILE ANSICHT */
+
   @media (max-width: 650px) {
     .buch {
       width: 96vw;
       height: 58vh;
     }
-    .buchseite { padding: 12px; }
-    .steuerung button { padding: 9px 12px; }
+
+    .buchseite {
+      padding: 12px;
+    }
+
+    .steckbrief-seite {
+      padding: 0;
+    }
+
+    .steuerung button {
+      padding: 9px 12px;
+    }
   }
 </style>
 </head>
+
 <body>
 
 <main class="szene">
-  <div class="bildbereich">
-    <img id="startbild" class="hintergrund"
-         src="startseite.png" alt="Geschlossenes Tagebuch">
 
-    <video id="buchvideo" class="video" preload="auto" playsinline>
+  <div class="bildbereich">
+
+    <!-- GESCHLOSSENES TAGEBUCH -->
+    <img
+      id="startbild"
+      class="hintergrund"
+      src="startseite.png"
+      alt="Geschlossenes Tagebuch"
+    >
+
+    <!-- BUCHÖFFNUNGSANIMATION -->
+    <video
+      id="buchvideo"
+      class="video"
+      preload="auto"
+      playsinline
+    >
       <source src="buch-oeffnen.mp4" type="video/mp4">
     </video>
 
-    <img id="offenesbuch" class="offenes-buch"
-         src="buch-offen.png" alt="Geöffnetes Tagebuch">
+    <!-- GEÖFFNETES TAGEBUCH -->
+    <img
+      id="offenesbuch"
+      class="offenes-buch"
+      src="buch-offen.png"
+      alt="Geöffnetes Tagebuch"
+    >
 
-    <button id="buchbutton" class="buchbutton"
-            onclick="buchOeffnen()" aria-label="Tagebuch öffnen"></button>
+    <!-- BUCH ÖFFNEN -->
+    <button
+      id="buchbutton"
+      class="buchbutton"
+      onclick="buchOeffnen()"
+      aria-label="Tagebuch öffnen"
+    ></button>
 
-    <div id="hinweis" class="hinweis">Klicke auf das Tagebuch 📖</div>
-
-    <button id="seitenklick" class="seitenklick"
-            onclick="lesemodusOeffnen()" aria-label="Lesemodus öffnen"></button>
-  </div>
-</main>
-
-<section id="lesemodus" class="lesemodus" aria-label="Tagebuch Lesemodus">
-  <div class="blur-hintergrund"></div>
-
-  <div class="buch">
-    <div class="buchseite links">
-      <h1>Esats Tagebuch ❤️</h1>
-      <p><strong>Dieses Tagebuch gehört ESAT.</strong></p>
-      <p>Alter: 27 Jahre</p>
-      <p>Nationalität: Türke</p>
-      <p>Beziehungsstatus: Single</p>
-      <p>Ziel: Die große Liebe finden. ❤️</p>
+    <div id="hinweis" class="hinweis">
+      Klicke auf das Tagebuch 📖
     </div>
 
+    <!-- LESEMODUS STARTEN -->
+    <button
+      id="seitenklick"
+      class="seitenklick"
+      onclick="lesemodusOeffnen()"
+      aria-label="Lesemodus öffnen"
+    ></button>
+
+  </div>
+
+</main>
+
+<!-- GROSSER LESEMODUS -->
+
+<section
+  id="lesemodus"
+  class="lesemodus"
+  aria-label="Tagebuch Lesemodus"
+>
+
+  <!-- VERSCHWOMMENER HINTERGRUND -->
+  <div class="blur-hintergrund"></div>
+
+  <!-- GROSSES TAGEBUCH -->
+  <div class="buch">
+
+    <!-- LINKE SEITE: ORIGINALBILD -->
+    <div class="buchseite links steckbrief-seite"></div>
+
+    <!-- RECHTE SEITE -->
     <div class="buchseite rechts">
       <h1>Tag 01</h1>
       <p>Hier beginnt Esats Geschichte ...</p>
     </div>
 
+    <!-- BUCHMITTE -->
     <div class="buchmitte"></div>
 
-    <div id="blatt" class="blatt" onclick="umblattern()">
+    <!-- UMBLÄTTERBARE TESTSEITE -->
+    <div
+      id="blatt"
+      class="blatt"
+      onclick="umblattern()"
+    >
+
       <div class="blattseite">
         <h2>Tag 01</h2>
         <p>Der Anfang einer besonderen Geschichte ...</p>
         <small>Zum Umblättern klicken →</small>
       </div>
+
       <div class="blattseite rueck">
         <h2>Seite 2</h2>
         <p>Hier geht Esats Geschichte weiter ...</p>
       </div>
+
     </div>
+
   </div>
 
+  <!-- STEUERUNG -->
   <div class="steuerung">
-    <button onclick="zurueck()">← Zurückblättern</button>
-    <button onclick="lesemodusSchliessen()">✕ Schließen</button>
+
+    <button onclick="zurueck()">
+      ← Zurückblättern
+    </button>
+
+    <button onclick="lesemodusSchliessen()">
+      ✕ Schließen
+    </button>
+
   </div>
+
 </section>
 
 <script>
@@ -313,14 +440,23 @@
   const lesemodus = document.getElementById("lesemodus");
   const blatt = document.getElementById("blatt");
 
+  /* BUCH ÖFFNEN */
+
   function buchOeffnen() {
     buchbutton.style.display = "none";
     hinweis.style.display = "none";
+
     startbild.style.display = "none";
     video.style.display = "block";
+
     video.currentTime = 0;
-    video.play().catch(() => { video.controls = true; });
+
+    video.play().catch(() => {
+      video.controls = true;
+    });
   }
+
+  /* NACH VIDEO DAS GEÖFFNETE BUCH ANZEIGEN */
 
   video.addEventListener("ended", () => {
     video.style.display = "none";
@@ -328,27 +464,38 @@
     seitenklick.style.display = "block";
   });
 
+  /* LESEMODUS ÖFFNEN */
+
   function lesemodusOeffnen() {
     lesemodus.style.display = "flex";
+
     requestAnimationFrame(() => {
       lesemodus.classList.add("aktiv");
     });
   }
 
+  /* LESEMODUS SCHLIESSEN */
+
   function lesemodusSchliessen() {
     lesemodus.classList.remove("aktiv");
+
     setTimeout(() => {
       lesemodus.style.display = "none";
     }, 600);
   }
 
+  /* SEITE UMBLÄTTERN */
+
   function umblattern() {
     blatt.classList.toggle("umgeblattert");
   }
+
+  /* ZURÜCKBLÄTTERN */
 
   function zurueck() {
     blatt.classList.remove("umgeblattert");
   }
 </script>
+
 </body>
 </html>
