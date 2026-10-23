@@ -81,9 +81,7 @@ body {
 }
 
 @keyframes pulsieren {
-  50% {
-    opacity: .45;
-  }
+  50% { opacity: .45; }
 }
 
 .seitenklick {
@@ -778,9 +776,8 @@ function messbereichAnpassen() {
 /*
   PRÜFEN, OB INHALT AUF EINE SEITE PASST
 
-  Die Unterkante des letzten Elements
-  wird mit dem verfügbaren Platz
-  auf der Buchseite verglichen.
+  Unten bleibt ein kleiner Abstand
+  zur Seitenzahl erhalten.
 */
 
 function passtAufSeite(html) {
@@ -816,11 +813,10 @@ function passtAufSeite(html) {
 /*
   TEXT AUTOMATISCH AUFTEILEN
 
-  Erst wird ermittelt, wie viele Wörter
-  noch auf die Seite passen.
-
-  Danach wird bevorzugt nach einem
-  vollständigen Satz getrennt.
+  Möglichst viel Text auf der Seite
+  unterbringen. Satzenden werden nur
+  bevorzugt, wenn höchstens eine
+  Textzeile dadurch verloren geht.
 */
 
 function textAufteilen(text, kopf, bisher) {
@@ -829,6 +825,8 @@ function textAufteilen(text, kopf, bisher) {
   let links = 0;
   let rechts = woerter.length;
   let besteAnzahl = 0;
+
+  // Maximale Anzahl passender Wörter finden
 
   while (links <= rechts) {
     const mitte = Math.floor(
@@ -852,26 +850,68 @@ function textAufteilen(text, kopf, bisher) {
     }
   }
 
+  if (besteAnzahl === 0) {
+    return {
+      passend: "",
+      rest: text
+    };
+  }
+
   let trennstelle = besteAnzahl;
 
-  /*
-    Satzende suchen, solange dabei
-    maximal 15 % der passenden Wörter
-    auf die nächste Seite wandern.
-  */
+  // Höhe des maximal passenden Textes messen
 
-  const mindestAnzahl =
-    Math.ceil(besteAnzahl * 0.85);
+  const vollerText = woerter
+    .slice(0, besteAnzahl)
+    .join(" ");
 
-  for (
-    let i = besteAnzahl;
-    i >= mindestAnzahl && i > 0;
-    i--
-  ) {
-    if (/[.!?]["'»“”)]?$/.test(woerter[i - 1])) {
-      trennstelle = i;
-      break;
+  messinhalt.innerHTML =
+    kopf +
+    bisher +
+    `<p>${htmlSicher(vollerText)}</p>`;
+
+  const vollerAbsatz =
+    messinhalt.lastElementChild;
+
+  const vollerHoehe =
+    vollerAbsatz.getBoundingClientRect().bottom;
+
+  // Zeilenhöhe direkt am Absatz ermitteln
+
+  const zeilenhoehe = parseFloat(
+    getComputedStyle(vollerAbsatz).lineHeight
+  );
+
+  // Nur nahegelegene Satzenden berücksichtigen
+
+  for (let i = besteAnzahl; i > 0; i--) {
+    if (
+      !/[.!?]["'»“”)]?$/.test(woerter[i - 1])
+    ) {
+      continue;
     }
+
+    const teil = woerter
+      .slice(0, i)
+      .join(" ");
+
+    messinhalt.innerHTML =
+      kopf +
+      bisher +
+      `<p>${htmlSicher(teil)}</p>`;
+
+    const aktuelleHoehe =
+      messinhalt.lastElementChild
+        .getBoundingClientRect().bottom;
+
+    if (
+      vollerHoehe - aktuelleHoehe <=
+      zeilenhoehe
+    ) {
+      trennstelle = i;
+    }
+
+    break;
   }
 
   return {
@@ -888,8 +928,8 @@ function textAufteilen(text, kopf, bisher) {
 /*
   EINEN TAGEBUCHEINTRAG AUFTEILEN
 
-  Jeder Eintrag darf beliebig viele
-  Seiten benötigen.
+  Text darf über mehrere Seiten laufen.
+  Bilder bleiben vollständig zusammen.
 */
 
 function eintragAufteilen(eintrag) {
@@ -912,13 +952,12 @@ function eintragAufteilen(eintrag) {
     if (block.typ === "bild") {
       const bild = blockHTML(block);
 
-      if (passtAufSeite(kopf + inhalt + bild)) {
+      if (
+        passtAufSeite(kopf + inhalt + bild)
+      ) {
         inhalt += bild;
       } else {
-        /*
-          Bild passt nicht mehr:
-          Auf die nächste Seite verschieben.
-        */
+        // Bild auf die nächste Seite verschieben
 
         seiteAbschliessen();
         inhalt += bild;
@@ -993,7 +1032,7 @@ function eintragAufteilen(eintrag) {
 /*
   ALLE BUCHSEITEN ERZEUGEN
 
-  Die erste linke Seite ist der Steckbrief.
+  Erste linke Seite: Steckbrief.
   Danach folgen die Tagebucheinträge.
 */
 
