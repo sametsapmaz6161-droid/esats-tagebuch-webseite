@@ -712,7 +712,7 @@ body {
 
     <div class="buchmitte"></div>
 
-    <div id="letzteSeiteHinweis" class="letzte-seite-hinweis" hidden>♡ Du bist am Ende angekommen. Klicke auf die freie Fläche der rechten Buchseite, um das Tagebuch zu schließen →</div>
+    <div id="letzteSeiteHinweis" class="letzte-seite-hinweis" hidden>♡ Du bist am Ende des Tagebuchs angekommen. Klicke auf das letzte Bild mit den Frauenhänden, um das Tagebuch zu schließen. ♡</div>
     <div id="leseStartHinweis" class="lese-start-hinweis" hidden>Zum Weiterlesen auf die rechte Seite klicken →</div>
     <div id="infoPflichtHinweis" class="info-pflicht-hinweis" hidden>Bitte zuerst auf das ⓘ klicken →</div>
     <button type="button" id="infoKnopf" class="info-knopf" aria-label="Tipps zum Lesen anzeigen" aria-expanded="false" aria-controls="infoBlase" hidden>i</button>
@@ -3759,7 +3759,7 @@ const eintraege = [
       },
       {
         "typ": "bild",
-        "datei": "bilder/tag-30-abschluss.png",
+        "datei": "bilder/esat_final_frau.png",
         "alt": "Hauptbild Tag 30",
         "bildunterschrift": "Das war's, liebes Tagebuch. Aus Esat wurde Esat-chan. 💕🌸"
       }
@@ -4307,6 +4307,13 @@ function seitenAnzeigen() {
   const istAllerletzteSeite = aktuelleDoppelseite === anzahlDoppelseiten() - 1
     && freieKapitel() >= eintraege.length;
   document.getElementById("letzteSeiteHinweis").hidden = !istAllerletzteSeite;
+  // Der Abschlussbild-Klick ist als Aktion erkennbar.
+  if (istAllerletzteSeite) {
+    lesemodus.querySelectorAll('.tagebuchbild[src$="esat_final_frau.png"]').forEach(img => {
+      img.title = "Klicken, um das Tagebuch zu schließen";
+      img.style.cursor = "pointer";
+    });
+  }
   const ersteDoppelseite = aktuelleDoppelseite === 0;
   const infoPflicht = infoHilfeNochPflicht() && ersteDoppelseite;
   document.getElementById("leseStartHinweis").hidden = !ersteDoppelseite || infoPflicht;
@@ -4460,9 +4467,9 @@ function vorblattern() {
   }
 
   if (aktuelleDoppelseite >= anzahlDoppelseiten() - 1) {
-    // Schlussvideo nur dann, wenn wirklich alle 30 Kapitel freigeschaltet sind.
-    if (freieKapitel() >= eintraege.length) tagebuchSchliessenAmEnde();
-    else sperreOeffnen();
+    // Am Ende wird die Schlussanimation ausschließlich durch einen Klick
+    // auf das letzte Bild ausgelöst, nicht durch Weiterblättern.
+    if (freieKapitel() < eintraege.length) sperreOeffnen();
     return;
   }
 
@@ -4741,6 +4748,14 @@ lesemodus.addEventListener("click", (ereignis) => {
   if (!bild || !lesemodus.classList.contains("aktiv")) return;
   ereignis.preventDefault();
   ereignis.stopPropagation();
+  // Das Abschlussbild ist der einzige Auslöser für die Schlussanimation.
+  // Bei allen anderen Bildern bleibt die gewohnte Großansicht erhalten.
+  const istLetztesBild = bild.getAttribute("src")?.split("/").pop() === "esat_final_frau.png";
+  const istLetzteDoppelseite = aktuelleDoppelseite === anzahlDoppelseiten() - 1;
+  if (istLetztesBild && istLetzteDoppelseite && freieKapitel() >= eintraege.length) {
+    tagebuchSchliessenAmEnde();
+    return;
+  }
   bildGrossOeffnen(bild);
 }, true);
 bildLupeSchliessen.addEventListener("click", bildGrossSchliessen);
