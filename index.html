@@ -121,13 +121,18 @@
     transform: scale(1.05);
   }
 
-  /* GROSSES BUCH */
+  /* GROSSES BUCH – NEUE GRÖSSE */
 
   .buch {
     position: relative;
     z-index: 2;
-    width: min(88vw, 1400px);
-    height: min(78vh, 760px);
+
+    /* 92 % Bildschirmbreite, maximal 1600 px */
+    width: min(92vw, 1600px);
+
+    /* 90 % Bildschirmhöhe */
+    height: 90dvh;
+
     display: flex;
     filter: drop-shadow(0 25px 35px #000a);
     transform: scale(.85);
@@ -165,7 +170,7 @@
     padding: 0;
   }
 
-  /* RECHTE SEITE: VORLÄUFIGE TESTSEITE */
+  /* RECHTE SEITE: TESTSEITE */
 
   .rechts {
     border-radius: 2px 14px 14px 2px;
@@ -267,7 +272,7 @@
 
   .steuerung {
     position: absolute;
-    bottom: 2%;
+    bottom: 1%;
     left: 50%;
     transform: translateX(-50%);
     z-index: 30;
@@ -293,7 +298,7 @@
   @media (max-width: 650px) {
     .buch {
       width: 96vw;
-      height: 58vh;
+      height: 75dvh;
     }
 
     .buchseite {
