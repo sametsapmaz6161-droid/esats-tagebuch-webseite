@@ -562,6 +562,29 @@ body {
 .test-fehler { min-height:18px; color:#9d2626; font-size:13px; }
 
 
+
+/* Dezenter Hinweis nur auf der allerletzten Doppelseite */
+.letzte-seite-hinweis {
+  position: absolute;
+  right: 3%;
+  bottom: 3%;
+  width: 41%;
+  z-index: 16;
+  pointer-events: none;
+  padding: 10px 13px;
+  border: 1px solid rgba(160, 102, 76, .55);
+  border-radius: 12px;
+  background: rgba(255, 241, 218, .95);
+  color: #75422f;
+  font: italic clamp(12px, 1.3vw, 17px)/1.4 Georgia, serif;
+  text-align: center;
+  box-shadow: 0 3px 14px rgba(55, 25, 15, .18);
+}
+.letzte-seite-hinweis[hidden] { display: none !important; }
+@media (max-width: 650px) {
+  .letzte-seite-hinweis { bottom: 2%; padding: 6px; font-size: 11px; }
+}
+
 /* Schlussvideo nach Tag 30 */
 .schlussvideo-szene { position:fixed; inset:0; z-index:100020; background:#160d0a; display:none; overflow:hidden; }
 .schlussvideo-szene.sichtbar { display:block; }
@@ -689,6 +712,7 @@ body {
 
     <div class="buchmitte"></div>
 
+    <div id="letzteSeiteHinweis" class="letzte-seite-hinweis" hidden>♡ Du bist am Ende angekommen. Klicke auf die freie Fläche der rechten Buchseite, um das Tagebuch zu schließen →</div>
     <div id="leseStartHinweis" class="lese-start-hinweis" hidden>Zum Weiterlesen auf die rechte Seite klicken →</div>
     <div id="infoPflichtHinweis" class="info-pflicht-hinweis" hidden>Bitte zuerst auf das ⓘ klicken →</div>
     <button type="button" id="infoKnopf" class="info-knopf" aria-label="Tipps zum Lesen anzeigen" aria-expanded="false" aria-controls="infoBlase" hidden>i</button>
@@ -3727,11 +3751,15 @@ const eintraege = [
       },
       {
         "typ": "text",
-        "text": "Das hier war mein letzter Tagebucheintrag. Ich habe sowieso das Gefühl, dass sich diesen ganzen Käse kein Mensch durchliest. Falls doch: Danke, dass du bis hierher geblieben bist. Leb wohl, liebes Tagebuch."
+        "text": "Das hier war mein letzter Tagebucheintrag. Ich habe sowieso das Gefühl, dass sich diesen ganzen Käse kein Mensch durchliest. Falls doch: Danke, dass du bis hierher geblieben bist."
+      },
+      {
+        "typ": "text",
+        "text": "Leb wohl, liebes Tagebuch."
       },
       {
         "typ": "bild",
-        "datei": "bilder/tag-30.png",
+        "datei": "bilder/tag-30-abschluss.png",
         "alt": "Hauptbild Tag 30",
         "bildunterschrift": "Das war's, liebes Tagebuch. Aus Esat wurde Esat-chan. 💕🌸"
       }
@@ -4276,6 +4304,9 @@ function seitenAnzeigen() {
     seitenHTML(rechtsIndex);
 
   kapitelAktivMarkieren();
+  const istAllerletzteSeite = aktuelleDoppelseite === anzahlDoppelseiten() - 1
+    && freieKapitel() >= eintraege.length;
+  document.getElementById("letzteSeiteHinweis").hidden = !istAllerletzteSeite;
   const ersteDoppelseite = aktuelleDoppelseite === 0;
   const infoPflicht = infoHilfeNochPflicht() && ersteDoppelseite;
   document.getElementById("leseStartHinweis").hidden = !ersteDoppelseite || infoPflicht;
