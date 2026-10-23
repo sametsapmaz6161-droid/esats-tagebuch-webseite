@@ -7,6 +7,13 @@
 <title>Esats Tagebuch ❤️</title>
 
 <style>
+  :root {
+    --papier: #fbf1db;
+    --schrift: #714322;
+    --leder: #392117;
+    --dauer: 1650ms;
+  }
+
   * {
     box-sizing: border-box;
   }
@@ -57,8 +64,8 @@
     top: 16%;
     width: 37%;
     height: 67%;
-    border: none;
     background: transparent;
+    border: none;
     cursor: pointer;
   }
 
@@ -74,7 +81,9 @@
   }
 
   @keyframes pulsieren {
-    50% { opacity: .45; }
+    50% {
+      opacity: .45;
+    }
   }
 
   .seitenklick {
@@ -123,23 +132,18 @@
     width: min(92vw, 1600px);
     height: 90dvh;
     display: flex;
-    perspective: 2400px;
+    perspective: 2600px;
     filter: drop-shadow(0 25px 35px #000a);
     transform: scale(.85);
     transition: transform .8s ease;
+    isolation: isolate;
   }
 
   .lesemodus.aktiv .buch {
     transform: scale(1);
   }
 
-  /* PAPIERFARBEN AUS DEM SCREENSHOT */
-
-  :root {
-    --papier: #fbf1db;
-    --schrift: #714322;
-    --rand: #bda17a;
-  }
+  /* PAPIER */
 
   .papier {
     background-color: var(--papier);
@@ -148,6 +152,13 @@
         ellipse at 35% 20%,
         rgba(255,255,255,.20),
         transparent 70%
+      ),
+      repeating-linear-gradient(
+        0deg,
+        rgba(120,90,60,.009) 0,
+        rgba(120,90,60,.009) 1px,
+        transparent 1px,
+        transparent 5px
       ),
       linear-gradient(
         90deg,
@@ -158,7 +169,7 @@
       );
   }
 
-  /* SICHTBARE BUCHSEITEN */
+  /* BUCHSEITEN */
 
   .buchseite {
     position: relative;
@@ -182,50 +193,53 @@
     background: url("steckbrief.png") center / 100% 100% no-repeat;
   }
 
-  /* INHALT DER TAGEBUCHSEITEN */
+  /* KLEINERE SCHRIFT */
 
   .seiteninhalt {
+    position: relative;
     height: 100%;
     overflow: hidden;
-    padding: clamp(22px, 3.1vw, 52px);
+    padding: clamp(20px, 3vw, 48px);
     color: var(--schrift);
   }
 
   .seiteninhalt h2 {
-    font-size: clamp(19px, 2vw, 29px);
+    font-size: clamp(17px, 1.65vw, 24px);
     font-weight: normal;
-    line-height: 1.4;
-    margin: 0 0 30px;
+    line-height: 1.45;
+    margin: 0 0 24px;
   }
 
   .seiteninhalt p {
-    font-size: clamp(15px, 1.42vw, 21px);
-    line-height: 1.85;
-    margin: 0 0 24px;
+    font-size: clamp(12px, 1.12vw, 17px);
+    line-height: 1.8;
+    margin: 0 0 19px;
     overflow-wrap: break-word;
   }
 
   .seiteninhalt .datum {
     display: block;
-    margin-bottom: 24px;
-    font-size: clamp(12px, 1vw, 15px);
+    margin-bottom: 20px;
+    font-size: clamp(11px, .9vw, 13px);
     letter-spacing: .04em;
     opacity: .7;
   }
 
   .seiteninhalt .seitenzahl {
     position: absolute;
-    bottom: 18px;
-    font-size: 13px;
-    opacity: .55;
+    bottom: 17px;
+    font-size: 12px;
+    opacity: .5;
   }
 
-  .rechts .seitenzahl {
-    right: 30px;
+  .rechts .seitenzahl,
+  .blattseite:not(.rueck) .seitenzahl {
+    right: 28px;
   }
 
-  .links .seitenzahl {
-    left: 30px;
+  .links .seitenzahl,
+  .blattseite.rueck .seitenzahl {
+    left: 28px;
   }
 
   /* BUCHMITTE */
@@ -233,20 +247,20 @@
   .buchmitte {
     position: absolute;
     top: 0;
-    left: calc(50% - 8px);
-    width: 16px;
+    left: calc(50% - 9px);
     height: 100%;
+    width: 18px;
     background: linear-gradient(
       90deg,
-      #67432477,
-      #2b160c77,
-      #67432455
+      rgba(80,49,27,.28),
+      rgba(42,22,12,.48) 48%,
+      rgba(80,49,27,.20)
     );
     z-index: 12;
     pointer-events: none;
   }
 
-  /* ANIMIERTES BLATT */
+  /* ANIMIERTES PAPIERBLATT */
 
   .blatt {
     position: absolute;
@@ -256,14 +270,11 @@
     height: 100%;
     transform-origin: left center;
     transform-style: preserve-3d;
-    transition: transform 1.15s cubic-bezier(.45,.05,.3,1);
-    z-index: 10;
+    transform: rotateY(0deg);
     display: none;
+    z-index: 10;
     pointer-events: none;
-  }
-
-  .blatt.umgeblattert {
-    transform: rotateY(-180deg);
+    will-change: transform;
   }
 
   .blattseite {
@@ -272,14 +283,152 @@
     overflow: hidden;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    border-radius: 2px 12px 12px 2px;
-    box-shadow: inset 16px 0 25px -22px #321b0d;
+    border-radius: 1px 11px 11px 1px;
+    box-shadow:
+      inset 12px 0 20px -18px rgba(56,34,18,.45),
+      2px 1px 2px rgba(58,37,22,.10);
   }
 
   .blattseite.rueck {
     transform: rotateY(180deg);
-    border-radius: 12px 2px 2px 12px;
-    box-shadow: inset -16px 0 25px -22px #321b0d;
+    border-radius: 11px 1px 1px 11px;
+    box-shadow:
+      inset -12px 0 20px -18px rgba(56,34,18,.45),
+      -2px 1px 2px rgba(58,37,22,.10);
+  }
+
+  /* LICHTSPIEL AUF DEM BLATT */
+
+  .blattseite::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(47,28,16,.23) 0%,
+      transparent 24%,
+      rgba(255,255,255,.34) 48%,
+      rgba(78,48,27,.15) 76%,
+      transparent 100%
+    );
+  }
+
+  /* FEINE PAPIERKANTE */
+
+  .blattseite::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 2px;
+    height: 100%;
+    background: rgba(112,85,54,.22);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .blattseite.rueck::before {
+    right: auto;
+    left: 0;
+  }
+
+  /* WEICHES VORWÄRTSBLÄTTERN */
+
+  .blatt.vorwaerts {
+    animation: papierVorwaerts var(--dauer)
+      cubic-bezier(.42, 0, .20, 1) forwards;
+  }
+
+  /* WEICHES ZURÜCKBLÄTTERN */
+
+  .blatt.rueckwaerts {
+    animation: papierRueckwaerts var(--dauer)
+      cubic-bezier(.42, 0, .20, 1) forwards;
+  }
+
+  @keyframes papierVorwaerts {
+    0% {
+      transform: rotateY(0deg) rotateZ(0deg);
+      filter: drop-shadow(3px 4px 3px rgba(0,0,0,.08));
+    }
+
+    18% {
+      transform: rotateY(-19deg) rotateZ(-.25deg);
+      filter: drop-shadow(10px 9px 8px rgba(0,0,0,.14));
+    }
+
+    48% {
+      transform: rotateY(-87deg) rotateZ(-.6deg);
+      filter: drop-shadow(20px 14px 13px rgba(0,0,0,.23));
+    }
+
+    72% {
+      transform: rotateY(-151deg) rotateZ(-.25deg);
+      filter: drop-shadow(9px 8px 7px rgba(0,0,0,.13));
+    }
+
+    100% {
+      transform: rotateY(-180deg) rotateZ(0deg);
+      filter: drop-shadow(2px 2px 2px rgba(0,0,0,.05));
+    }
+  }
+
+  @keyframes papierRueckwaerts {
+    0% {
+      transform: rotateY(-180deg) rotateZ(0deg);
+      filter: drop-shadow(2px 2px 2px rgba(0,0,0,.05));
+    }
+
+    22% {
+      transform: rotateY(-154deg) rotateZ(.25deg);
+      filter: drop-shadow(9px 8px 7px rgba(0,0,0,.13));
+    }
+
+    52% {
+      transform: rotateY(-91deg) rotateZ(.6deg);
+      filter: drop-shadow(20px 14px 13px rgba(0,0,0,.23));
+    }
+
+    82% {
+      transform: rotateY(-19deg) rotateZ(.25deg);
+      filter: drop-shadow(10px 9px 8px rgba(0,0,0,.14));
+    }
+
+    100% {
+      transform: rotateY(0deg) rotateZ(0deg);
+      filter: drop-shadow(3px 4px 3px rgba(0,0,0,.08));
+    }
+  }
+
+  /* WANDERNDER PAPIERSCHATTEN */
+
+  .blatt.vorwaerts .blattseite::after,
+  .blatt.rueckwaerts .blattseite::after {
+    animation: papierLicht var(--dauer) ease-in-out;
+  }
+
+  @keyframes papierLicht {
+    0% {
+      opacity: .05;
+      background-position: -150px 0;
+    }
+
+    45% {
+      opacity: .85;
+      background-position: 0 0;
+    }
+
+    70% {
+      opacity: .65;
+      background-position: 120px 0;
+    }
+
+    100% {
+      opacity: .04;
+      background-position: 200px 0;
+    }
   }
 
   /* KLICKBEREICHE */
@@ -287,8 +436,8 @@
   .klickbereich {
     position: absolute;
     top: 0;
-    height: 100%;
     width: 50%;
+    height: 100%;
     z-index: 15;
     border: 0;
     background: transparent;
@@ -316,7 +465,7 @@
   }
 
   .steuerung button {
-    background: #392117;
+    background: var(--leder);
     color: #ffe0ad;
     border: 1px solid #c8a16d;
     border-radius: 8px;
@@ -342,23 +491,29 @@
     }
 
     .seiteninhalt {
-      padding: 13px;
+      padding: 12px;
     }
 
     .seiteninhalt h2 {
-      font-size: 16px;
-      margin-bottom: 14px;
+      font-size: 15px;
+      margin-bottom: 12px;
     }
 
     .seiteninhalt p {
-      font-size: 11px;
-      line-height: 1.55;
-      margin-bottom: 12px;
+      font-size: 10px;
+      line-height: 1.6;
+      margin-bottom: 10px;
     }
 
     .steuerung button {
       padding: 9px 12px;
       font-size: 12px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --dauer: 350ms;
     }
   }
 </style>
@@ -413,8 +568,6 @@
   </div>
 </main>
 
-<!-- LESEMODUS -->
-
 <section
   id="lesemodus"
   class="lesemodus"
@@ -425,19 +578,19 @@
 
   <div class="buch">
 
-    <!-- LINKE SEITE -->
+    <!-- LINKE BUCHSEITE -->
     <div
       id="linkeSeite"
       class="buchseite links steckbrief-seite"
     ></div>
 
-    <!-- RECHTE SEITE -->
+    <!-- RECHTE BUCHSEITE -->
     <div
       id="rechteSeite"
       class="buchseite rechts papier"
     ></div>
 
-    <!-- ANIMIERTES BLATT -->
+    <!-- ANIMIERTES PAPIER -->
     <div id="blatt" class="blatt">
 
       <div
@@ -454,14 +607,13 @@
 
     <div class="buchmitte"></div>
 
-    <!-- KLICK ZURÜCK -->
+    <!-- BLÄTTERN DURCH KLICKEN -->
     <button
       class="klickbereich zurueck"
       onclick="zurueckblattern()"
       aria-label="Zurückblättern"
     ></button>
 
-    <!-- KLICK VORWÄRTS -->
     <button
       class="klickbereich vor"
       onclick="vorblattern()"
@@ -470,6 +622,7 @@
 
   </div>
 
+  <!-- BUTTONS -->
   <div class="steuerung">
 
     <button
@@ -509,10 +662,8 @@
   /*
     TESTEINTRÄGE
 
-    Jeder Eintrag besitzt eine Überschrift,
-    ein Datum und den eigentlichen Tagebuchtext.
-
-    Die echten 30 Einträge fügen wir später ein.
+    Später ersetzen wir diese durch
+    die echten 30 Tagebucheinträge.
   */
 
   const eintraege = [
@@ -554,14 +705,10 @@
     }
   ];
 
-  /*
-    AUS EINTRÄGEN HTML ERZEUGEN
-  */
+  /* HTML FÜR EINEN EINTRAG */
 
   function eintragHTML(eintrag, seitenzahl) {
-    if (!eintrag) {
-      return "";
-    }
+    if (!eintrag) return "";
 
     const abschnitte = eintrag.text
       .map(absatz => `<p>${absatz}</p>`)
@@ -577,23 +724,15 @@
     `;
   }
 
-  /*
-    DOPPELSEITEN:
-    0 = Steckbrief links, Tag 01 rechts
-    1 = Tag 02 links, Tag 03 rechts
-    2 = Tag 04 links, rechte Seite leer
-  */
-
   function anzahlDoppelseiten() {
     return Math.ceil((eintraege.length + 1) / 2);
   }
 
   function linkeHTML(index) {
-    if (index === 0) {
-      return null;
-    }
+    if (index === 0) return null;
 
     const eintragIndex = index * 2 - 1;
+
     return eintragHTML(
       eintraege[eintragIndex],
       eintragIndex + 2
@@ -608,6 +747,8 @@
       eintragIndex + 2
     );
   }
+
+  /* SEITEN DARSTELLEN */
 
   function seitenAnzeigen() {
     if (aktuelleDoppelseite === 0) {
@@ -676,11 +817,45 @@
   }
 
   /*
-    VORWÄRTSBLÄTTERN
+    PAPIERANIMATION STARTEN
 
-    Das rechte Blatt dreht sich nach links.
-    Die Rückseite zeigt die nächste linke Seite.
+    Die Animation wird erst nach dem
+    nächsten Browser-Frame aktiviert,
+    damit sie zuverlässig abläuft.
   */
+
+  function animationStarten(richtung, nachAnimation) {
+    blatt.classList.remove(
+      "vorwaerts",
+      "rueckwaerts"
+    );
+
+    blatt.style.display = "block";
+
+    void blatt.offsetWidth;
+
+    requestAnimationFrame(() => {
+      blatt.classList.add(richtung);
+    });
+
+    const dauer = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches ? 350 : 1650;
+
+    setTimeout(() => {
+      blatt.style.display = "none";
+
+      blatt.classList.remove(
+        "vorwaerts",
+        "rueckwaerts"
+      );
+
+      nachAnimation();
+      animationLaeuft = false;
+    }, dauer + 40);
+  }
+
+  /* VORWÄRTSBLÄTTERN */
 
   function vorblattern() {
     if (animationLaeuft) return;
@@ -688,9 +863,7 @@
     if (
       aktuelleDoppelseite >=
       anzahlDoppelseiten() - 1
-    ) {
-      return;
-    }
+    ) return;
 
     animationLaeuft = true;
 
@@ -703,39 +876,13 @@
     blattHinten.innerHTML =
       linkeHTML(naechsteSeite);
 
-    /*
-      Darunter bereits die neuen Seiten anzeigen.
-      Das animierte Blatt verdeckt den Übergang.
-    */
-
     aktuelleDoppelseite = naechsteSeite;
     seitenAnzeigen();
 
-    blatt.style.display = "block";
-    blatt.classList.remove("umgeblattert");
-    blatt.style.transition = "none";
-
-    void blatt.offsetWidth;
-
-    blatt.style.transition =
-      "transform 1.15s cubic-bezier(.45,.05,.3,1)";
-
-    requestAnimationFrame(() => {
-      blatt.classList.add("umgeblattert");
-    });
-
-    setTimeout(() => {
-      blatt.style.display = "none";
-      blatt.classList.remove("umgeblattert");
-      animationLaeuft = false;
-    }, 1200);
+    animationStarten("vorwaerts", () => {});
   }
 
-  /*
-    ZURÜCKBLÄTTERN
-
-    Das Blatt dreht sich von links nach rechts.
-  */
+  /* ZURÜCKBLÄTTERN */
 
   function zurueckblattern() {
     if (animationLaeuft) return;
@@ -752,34 +899,13 @@
     blattHinten.innerHTML =
       linkeHTML(aktuelleDoppelseite);
 
-    /*
-      Erst das Blatt auf der linken Seite
-      positionieren, dann zurückdrehen.
-    */
-
-    blatt.style.transition = "none";
-    blatt.style.display = "block";
-    blatt.classList.add("umgeblattert");
-
     aktuelleDoppelseite = vorherigeSeite;
     seitenAnzeigen();
 
-    void blatt.offsetWidth;
-
-    blatt.style.transition =
-      "transform 1.15s cubic-bezier(.45,.05,.3,1)";
-
-    requestAnimationFrame(() => {
-      blatt.classList.remove("umgeblattert");
-    });
-
-    setTimeout(() => {
-      blatt.style.display = "none";
-      animationLaeuft = false;
-    }, 1200);
+    animationStarten("rueckwaerts", () => {});
   }
 
-  /* ERSTE SEITEN ANZEIGEN */
+  /* ERSTE SEITE */
 
   seitenAnzeigen();
 </script>
