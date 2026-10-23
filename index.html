@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Esats Tagebuch ❤️</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #160d0a;
+      font-family: Georgia, serif;
+    }
+
+    .startseite {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      background: #160d0a;
+    }
+
+    .bildbereich {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: min(100vw, 177.78dvh);
+      aspect-ratio: 16 / 9;
+      transform: translate(-50%, -50%);
+    }
+
+    .hintergrund {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .buch {
+      position: absolute;
+      left: 33%;
+      top: 16%;
+      width: 37%;
+      height: 67%;
+      transform: rotate(-5deg);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .buch:focus-visible {
+      outline: 3px solid #ffc36a;
+    }
+
+    .hinweis {
+      position: absolute;
+      bottom: 4%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #ffe0ad;
+      font-size: clamp(13px, 1.5vw, 20px);
+      text-shadow: 0 2px 8px black;
+      text-align: center;
+      white-space: nowrap;
+      pointer-events: none;
+      animation: pulsieren 2s infinite;
+    }
+
+    @keyframes pulsieren {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="startseite">
+    <div class="bildbereich">
+
+      <img
+        src="startseite.png"
+        alt="Esats Tagebuch auf seinem Schreibtisch"
+        class="hintergrund"
+      >
+
+      <button
+        class="buch"
+        aria-label="Tagebuch öffnen"
+        onclick="buchOeffnen()"
+      ></button>
+
+      <div class="hinweis">
+        Klicke auf das Tagebuch 📖
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    function buchOeffnen() {
+      alert("Das Tagebuch wird bald geöffnet! ❤️");
+    }
+  </script>
+</body>
+</html>
