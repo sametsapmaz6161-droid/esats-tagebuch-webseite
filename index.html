@@ -466,6 +466,43 @@ body {
   pointer-events: none;
 }
 
+
+/* HANDGEZEICHNETE VIDEO-KÄSTEN */
+.videogruppe {
+  width: 100%; margin: 12px 0 20px;
+  color: #76614e; text-align: center;
+  break-inside: avoid;
+}
+.videozeichnung { width: 100%; height: 125px; }
+.videozeichnung svg { display:block; width:100%; height:100%; }
+.videogruppe .videobeschriftung {
+  font-size: 11px !important; line-height: 1.4;
+  font-style: italic; margin: 4px 0 0 !important;
+}
+.videogruppe:hover .videozeichnung { color: #a27756; }
+.videogruppe { cursor: pointer; }
+.video-overlay {
+  position: fixed; inset: 0; z-index: 100001;
+  display: none; align-items:center; justify-content:center;
+  padding: 55px 22px 28px;
+  background: rgba(12,7,5,.91); backdrop-filter: blur(10px);
+}
+.video-overlay.offen { display: flex; }
+.video-overlay-inhalt { width: min(94vw, 960px); text-align:center; }
+.video-overlay iframe {
+  display: block; width: 100%; aspect-ratio: 16 / 9;
+  border: 0; border-radius: 8px; background:#000;
+}
+.video-overlay p { color:#fff4e6; font: italic 15px Georgia,serif; }
+.video-overlay a { color:#f5d5a8; }
+.video-overlay-schliessen {
+  position:absolute; top:15px; right:20px;
+  width:43px; height:43px; border-radius:50%;
+  border:1px solid #ffffff66; background:#ffffff29;
+  color:white; font-size:25px; cursor:pointer;
+}
+@media(max-width:650px) { .videozeichnung {height:85px;} }
+
 </style>
 </head>
 
@@ -603,6 +640,16 @@ body {
   <button type="button" class="bild-lupe-schliessen" id="bildLupeSchliessen" aria-label="Großansicht schließen">×</button>
   <img id="bildLupeBild" alt="">
   <div id="bildLupeText" class="bild-lupe-beschriftung"></div>
+</div>
+
+
+<div id="videoOverlay" class="video-overlay" role="dialog" aria-modal="true" aria-label="Tagebuchvideo" aria-hidden="true">
+  <button type="button" id="videoOverlaySchliessen" class="video-overlay-schliessen" aria-label="Video schließen">×</button>
+  <div class="video-overlay-inhalt">
+    <iframe id="videoFrame" title="Tagebuchvideo" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    <p id="videoOverlayText"></p>
+    <a id="videoOriginalLink" href="#" target="_blank" rel="noopener noreferrer">Video direkt in Google Drive öffnen</a>
+  </div>
 </div>
 
 <div id="messbereich" class="messbereich">
@@ -3556,6 +3603,73 @@ const eintraege = [
   }
 ];
 
+
+const zusatzvideos = {
+  "5": [
+    {
+      "nach_text": "dass ich irgendwo noch Heu in meiner Hose hatte.",
+      "video": "https://drive.google.com/file/d/1kw4Ngn7z9m_05Zqiz1hMJiAcVhfzMtWm/view?usp=sharing",
+      "beschriftung": "Ein kleiner Einblick in mein Kaninchen-Chaos 🐰🎬"
+    }
+  ],
+  "6": [
+    {
+      "nach_text": "Jessica kuschelte sich an mich und legte ihren Kopf auf meine Schulter.",
+      "video": "https://drive.google.com/file/d/1aI5hyEj5bOYAD2WxLrVZE_BwZcF6pLqA/view?usp=sharing",
+      "beschriftung": "Jessica und ihr Seat Ibiza ... natürlich mit eigenem Instagram-Account. 💀🚗"
+    }
+  ],
+  "8": [
+    {
+      "nach_text": "Jessica fing an zu lachen.",
+      "video": "https://drive.google.com/file/d/1pCeHZujrT7ErH2NGvtmjz49x7EV2s0zK/view?usp=sharing",
+      "beschriftung": "Nicht mal beim Küssen haben wir Ruhe vor ihren Kaninchen. 💀🐰"
+    }
+  ],
+  "10": [
+    {
+      "nach_text": "Erst dann merkte ich, dass mir selbst Tränen über das Gesicht liefen.",
+      "video": "https://drive.google.com/file/d/1K8jQRQhJH0M2t_BanHGEkAp9f80XZ-0b/view?usp=sharing",
+      "beschriftung": "Harte Schale, weicher Kern ❤️🎬"
+    }
+  ],
+  "27": [
+    {
+      "nach_text": "Die Frau, deren Namen ich in den letzten Tagen öfter angeschaut hatte, als ich zugeben wollte.",
+      "video": "https://drive.google.com/file/d/1UxkMgcBousoMovx7UfBbaPxxWcY-gnU4/view?usp=drive_link",
+      "beschriftung": "Ein Moment, den ich nicht vergessen werde. 🎬❤️"
+    }
+  ]
+};
+
+// Videoverweise an der angegebenen Textstelle einfügen.
+function videosInEintraegeEinfuegen() {
+  for (const eintrag of eintraege) {
+    const nummer = String(Number(eintrag.tag.match(/\d+/)?.[0] || 0));
+    const videos = zusatzvideos[nummer] || [];
+    for (const videoInfo of videos) {
+      const index = eintrag.inhalt.findIndex(block =>
+        block.typ === "text" && block.text.includes(videoInfo.nach_text)
+      );
+      if (index < 0) {
+        console.warn("Videoposition nicht gefunden:", eintrag.tag, videoInfo.nach_text);
+        continue;
+      }
+      const original = eintrag.inhalt[index].text;
+      const ende = original.indexOf(videoInfo.nach_text) + videoInfo.nach_text.length;
+      const davor = original.slice(0, ende).trim();
+      const danach = original.slice(ende).trim();
+      const teile = [
+        {typ:"text", text:davor},
+        {typ:"video", datei:videoInfo.video, beschriftung:videoInfo.beschriftung}
+      ];
+      if (danach) teile.push({typ:"text", text:danach});
+      eintrag.inhalt.splice(index, 1, ...teile);
+    }
+  }
+}
+videosInEintraegeEinfuegen();
+
 /* HTML SICHER ERZEUGEN */
 
 function htmlSicher(text) {
@@ -3570,6 +3684,21 @@ function htmlSicher(text) {
 /* TEXT- UND BILDBAUSTEINE */
 
 function blockHTML(block, bildFaktor = 1) {
+  if (block.typ === "video") {
+    const url = htmlSicher(block.datei);
+    const beschriftung = htmlSicher(block.beschriftung || "Video ansehen");
+    return `<div class="videogruppe" data-video="${url}" data-beschriftung="${beschriftung}">
+      <div class="videozeichnung" role="img" aria-label="Video abspielen">
+        <svg viewBox="0 0 320 125" aria-hidden="true" focusable="false">
+          <path d="M12 13 Q83 9 160 14 T307 13 L311 111 Q240 116 160 111 T11 114 Z" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
+          <path d="M16 17 Q140 12 303 18 M15 109 Q160 106 307 112" fill="none" stroke="currentColor" stroke-width=".9" opacity=".45"/>
+          <path d="M145 29 Q164 24 183 32 Q205 42 202 65 Q204 87 181 97 Q157 104 141 89 Q126 75 131 53 Q133 38 145 29 Z" fill="none" stroke="currentColor" stroke-width="2.3"/>
+          <path d="M151 44 L151 83 L183 64 Z" fill="currentColor" fill-opacity=".13" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="videobeschriftung">${beschriftung}</p>
+    </div>`;
+  }
   if (block.typ === "bild") {
     const quelle = htmlSicher(block.datei);
     const alt = htmlSicher(block.alt || "");
@@ -3731,6 +3860,13 @@ function eintragAufteilen(eintrag) {
   for (let index = 0; index < bloecke.length; index++) {
     const block = bloecke[index];
     const istLetzterBlock = index === bloecke.length - 1;
+
+    if (block.typ === "video") {
+      const videoKasten = blockHTML(block);
+      if (!passtAufSeite(kopf + inhalt + videoKasten) && inhalt) seiteAbschliessen();
+      inhalt += videoKasten;
+      continue;
+    }
 
     if (block.typ === "bild") {
       if (istLetzterBlock) {
@@ -4211,6 +4347,15 @@ function bildGrossSchliessen() {
 lesemodus.addEventListener("click", (ereignis) => {
   // Die unsichtbaren Umblätter-Buttons liegen über den Buchseiten.
   // elementsFromPoint findet auch das darunterliegende Bild.
+  const videoKasten = document.elementsFromPoint(ereignis.clientX, ereignis.clientY)
+    .map(element => element.closest?.(".videogruppe"))
+    .find(Boolean);
+  if (videoKasten && lesemodus.classList.contains("aktiv")) {
+    ereignis.preventDefault();
+    ereignis.stopPropagation();
+    videoGrossOeffnen(videoKasten);
+    return;
+  }
   const bild = document.elementsFromPoint(ereignis.clientX, ereignis.clientY)
     .find(element => element.matches?.(".bildgruppe .tagebuchbild"));
   if (!bild || !lesemodus.classList.contains("aktiv")) return;
@@ -4226,6 +4371,39 @@ document.addEventListener("keydown", (ereignis) => {
   if (ereignis.key === "Escape" && bildLupe.classList.contains("offen")) {
     ereignis.preventDefault();
     bildGrossSchliessen();
+  }
+});
+
+
+/* VIDEO-GROSSANSICHT */
+const videoOverlay = document.getElementById("videoOverlay");
+const videoFrame = document.getElementById("videoFrame");
+const videoOverlayText = document.getElementById("videoOverlayText");
+const videoOriginalLink = document.getElementById("videoOriginalLink");
+const videoOverlaySchliessen = document.getElementById("videoOverlaySchliessen");
+function videoGrossOeffnen(kasten) {
+  const url = kasten.dataset.video;
+  const id = url.match(/drive\.google\.com\/file\/d\/([^/]+)/)?.[1];
+  if (!id) { window.open(url, "_blank", "noopener"); return; }
+  videoFrame.src = `https://drive.google.com/file/d/${encodeURIComponent(id)}/preview`;
+  videoOriginalLink.href = url;
+  videoOverlayText.textContent = kasten.dataset.beschriftung || "";
+  videoOverlay.classList.add("offen");
+  videoOverlay.setAttribute("aria-hidden", "false");
+  videoOverlaySchliessen.focus();
+}
+function videoGrossSchliessen() {
+  videoOverlay.classList.remove("offen");
+  videoOverlay.setAttribute("aria-hidden", "true");
+  videoFrame.removeAttribute("src"); // stoppt die Wiedergabe
+}
+videoOverlaySchliessen.addEventListener("click", videoGrossSchliessen);
+videoOverlay.addEventListener("click", event => {
+  if (event.target === videoOverlay) videoGrossSchliessen();
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && videoOverlay.classList.contains("offen")) {
+    event.preventDefault(); videoGrossSchliessen();
   }
 });
 
