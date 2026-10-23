@@ -2,244 +2,353 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Esats Tagebuch ❤️</title>
-  <style>
-    * { box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esats Tagebuch ❤️</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: #160d0a;
+    font-family: Georgia, serif;
+  }
 
-    body {
-      margin: 0;
-      background: #160d0a;
-      overflow: hidden;
-      font-family: Georgia, serif;
-    }
+  .szene {
+    position: relative;
+    width: 100vw;
+    height: 100dvh;
+    overflow: hidden;
+  }
 
-    .startseite {
-      position: relative;
-      width: 100vw;
-      height: 100dvh;
-      overflow: hidden;
-    }
+  .bildbereich {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(100vw, 177.78dvh);
+    aspect-ratio: 16 / 9;
+    transform: translate(-50%, -50%);
+  }
 
-    .bildbereich {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: min(100vw, 177.78dvh);
-      aspect-ratio: 16 / 9;
-      transform: translate(-50%, -50%);
-      overflow: hidden;
-      perspective: 1800px;
-    }
+  .hintergrund, .video, .offenes-buch {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
-    .hintergrund, .video, .offenes-buch {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+  .video, .offenes-buch { display: none; }
 
-    .video, .offenes-buch {
-      display: none;
-    }
+  .buchbutton {
+    position: absolute;
+    left: 33%;
+    top: 16%;
+    width: 37%;
+    height: 67%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
 
-    .buchbutton {
-      position: absolute;
-      left: 33%;
-      top: 16%;
-      width: 37%;
-      height: 67%;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-    }
+  .hinweis {
+    position: absolute;
+    bottom: 4%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffe0ad;
+    text-shadow: 0 2px 8px #000;
+    pointer-events: none;
+    animation: pulsieren 2s infinite;
+  }
 
-    .hinweis {
-      position: absolute;
-      bottom: 4%;
-      left: 50%;
-      transform: translateX(-50%);
-      color: #ffe0ad;
-      font-size: clamp(13px, 1.5vw, 20px);
-      text-shadow: 0 2px 8px black;
-      white-space: nowrap;
-      pointer-events: none;
-      animation: pulsieren 2s infinite;
-    }
+  @keyframes pulsieren {
+    50% { opacity: .45; }
+  }
 
-    @keyframes pulsieren {
-      0%, 100% { opacity: .5; }
-      50% { opacity: 1; }
-    }
+  /* Klickfläche auf rechter Buchseite */
+  .seitenklick {
+    position: absolute;
+    left: 52%;
+    top: 22%;
+    width: 28%;
+    height: 55%;
+    display: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+  }
 
-    /* Umblätterbare Seite auf der rechten Buchhälfte */
-    .seitenbereich {
-      position: absolute;
-      left: 51%;
-      top: 23%;
-      width: 29%;
-      height: 56%;
-      display: none;
-      perspective: 1400px;
-      z-index: 5;
-    }
+  /* Lesemodus */
+  .lesemodus {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .6s ease;
+  }
 
-    .testseite {
-      position: absolute;
-      inset: 0;
-      transform-origin: left center;
-      transform-style: preserve-3d;
-      transition: transform 1.3s ease-in-out;
-      cursor: pointer;
-    }
+  .lesemodus.aktiv {
+    display: flex;
+    opacity: 1;
+  }
 
-    .testseite.umgeblattert {
-      transform: rotateY(-175deg);
-    }
+  .blur-hintergrund {
+    position: absolute;
+    inset: -25px;
+    background: url("buch-offen.png") center / cover no-repeat;
+    filter: blur(15px) brightness(.5);
+    transform: scale(1.05);
+  }
 
-    .vorderseite, .rueckseite {
-      position: absolute;
-      inset: 0;
-      backface-visibility: hidden;
-      border-radius: 2px 12px 12px 2px;
-      background: #ead7ac;
-      box-shadow: 2px 2px 10px #0005;
-      padding: 12%;
-      color: #563b2a;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
+  .buch {
+    position: relative;
+    z-index: 2;
+    width: min(88vw, 1400px);
+    height: min(78vh, 760px);
+    display: flex;
+    filter: drop-shadow(0 25px 35px #000a);
+    transform: scale(.85);
+    transition: transform .8s ease;
+    perspective: 2200px;
+  }
 
-    .rueckseite {
-      transform: rotateY(180deg);
-      background: #e3cca0;
-    }
+  .lesemodus.aktiv .buch {
+    transform: scale(1);
+  }
 
-    .seitenbereich button {
-      font-family: Georgia, serif;
-    }
+  .buchseite {
+    position: relative;
+    width: 50%;
+    height: 100%;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 32px,
+        #8c694015 33px
+      ),
+      linear-gradient(100deg, #ddc49b, #f3e1b9 15%, #f0ddb5);
+    color: #563b2a;
+    padding: clamp(15px, 3vw, 50px);
+    overflow: hidden;
+  }
 
-    .zurueck {
-      position: absolute;
-      right: 3%;
-      bottom: 5%;
-      display: none;
-      z-index: 10;
-      padding: 10px 18px;
-      border: 1px solid #d5ad75;
-      border-radius: 8px;
-      background: #3c231a;
-      color: #ffe0ad;
-      cursor: pointer;
-    }
+  .links {
+    border-radius: 14px 2px 2px 14px;
+    box-shadow: inset -22px 0 28px -25px #43240e;
+  }
 
-    @media (max-width: 650px) {
-      .vorderseite, .rueckseite {
-        font-size: 9px;
-        padding: 6%;
-      }
-      .zurueck {
-        padding: 6px 10px;
-        font-size: 11px;
-      }
+  .rechts {
+    border-radius: 2px 14px 14px 2px;
+    box-shadow: inset 22px 0 28px -25px #43240e;
+  }
+
+  .buchseite h1 {
+    text-align: center;
+    font-size: clamp(20px, 2.7vw, 40px);
+    margin-bottom: 35px;
+  }
+
+  .buchseite p {
+    font-size: clamp(13px, 1.4vw, 20px);
+    line-height: 1.8;
+  }
+
+  .buchmitte {
+    position: absolute;
+    top: 0;
+    left: calc(50% - 8px);
+    height: 100%;
+    width: 16px;
+    background: linear-gradient(90deg, #67432477, #2b160c77, #67432455);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  /* Umblätteranimation */
+  .blatt {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 50%;
+    height: 100%;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    transition: transform 1.2s ease-in-out;
+    z-index: 6;
+    cursor: pointer;
+  }
+
+  .blatt.umgeblattert {
+    transform: rotateY(-180deg);
+  }
+
+  .blattseite {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    background: #efddb7;
+    border-radius: 2px 12px 12px 2px;
+    padding: clamp(15px, 3vw, 50px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #563b2a;
+    text-align: center;
+    box-shadow: inset 14px 0 25px -22px #321b0d;
+  }
+
+  .blattseite.rueck {
+    transform: rotateY(180deg);
+    border-radius: 12px 2px 2px 12px;
+  }
+
+  .blattseite h2 {
+    font-size: clamp(22px, 3vw, 44px);
+  }
+
+  .steuerung {
+    position: absolute;
+    bottom: 2%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    display: flex;
+    gap: 15px;
+  }
+
+  .steuerung button {
+    background: #392117;
+    color: #ffe0ad;
+    border: 1px solid #c8a16d;
+    border-radius: 8px;
+    padding: 12px 20px;
+    cursor: pointer;
+  }
+
+  @media (max-width: 650px) {
+    .buch {
+      width: 96vw;
+      height: 58vh;
     }
-  </style>
+    .buchseite { padding: 12px; }
+    .steuerung button { padding: 9px 12px; }
+  }
+</style>
 </head>
 <body>
 
-  <main class="startseite">
-    <div class="bildbereich">
+<main class="szene">
+  <div class="bildbereich">
+    <img id="startbild" class="hintergrund"
+         src="startseite.png" alt="Geschlossenes Tagebuch">
 
-      <img id="startbild" class="hintergrund"
-           src="startseite.png" alt="Geschlossenes Tagebuch">
+    <video id="buchvideo" class="video" preload="auto" playsinline>
+      <source src="buch-oeffnen.mp4" type="video/mp4">
+    </video>
 
-      <video id="buchvideo" class="video"
-             preload="auto" playsinline>
-        <source src="buch-oeffnen.mp4" type="video/mp4">
-      </video>
+    <img id="offenesbuch" class="offenes-buch"
+         src="buch-offen.png" alt="Geöffnetes Tagebuch">
 
-      <img id="offenesbuch" class="offenes-buch"
-           src="buch-offen.png" alt="Geöffnetes Tagebuch">
+    <button id="buchbutton" class="buchbutton"
+            onclick="buchOeffnen()" aria-label="Tagebuch öffnen"></button>
 
-      <button id="buchbutton" class="buchbutton"
-              aria-label="Tagebuch öffnen"
-              onclick="buchOeffnen()"></button>
+    <div id="hinweis" class="hinweis">Klicke auf das Tagebuch 📖</div>
 
-      <div id="hinweis" class="hinweis">
-        Klicke auf das Tagebuch 📖
-      </div>
+    <button id="seitenklick" class="seitenklick"
+            onclick="lesemodusOeffnen()" aria-label="Lesemodus öffnen"></button>
+  </div>
+</main>
 
-      <div id="seitenbereich" class="seitenbereich">
-        <div id="testseite" class="testseite"
-             onclick="seiteUmblattern()">
+<section id="lesemodus" class="lesemodus" aria-label="Tagebuch Lesemodus">
+  <div class="blur-hintergrund"></div>
 
-          <div class="vorderseite">
-            <h2>Tag 01</h2>
-            <p>Hier beginnt Esats Geschichte ...</p>
-            <small>Zum Umblättern klicken →</small>
-          </div>
-
-          <div class="rueckseite">
-            <h2>Esats Tagebuch ❤️</h2>
-            <p>Die erste Seite wurde umgeblättert!</p>
-          </div>
-
-        </div>
-      </div>
-
-      <button id="zurueck" class="zurueck"
-              onclick="zurueckBlattern()">
-        ↶ Zurückblättern
-      </button>
-
+  <div class="buch">
+    <div class="buchseite links">
+      <h1>Esats Tagebuch ❤️</h1>
+      <p><strong>Dieses Tagebuch gehört ESAT.</strong></p>
+      <p>Alter: 27 Jahre</p>
+      <p>Nationalität: Türke</p>
+      <p>Beziehungsstatus: Single</p>
+      <p>Ziel: Die große Liebe finden. ❤️</p>
     </div>
-  </main>
 
-  <script>
-    const video = document.getElementById("buchvideo");
-    const startbild = document.getElementById("startbild");
-    const offenesbuch = document.getElementById("offenesbuch");
-    const button = document.getElementById("buchbutton");
-    const hinweis = document.getElementById("hinweis");
-    const seitenbereich = document.getElementById("seitenbereich");
-    const testseite = document.getElementById("testseite");
-    const zurueck = document.getElementById("zurueck");
+    <div class="buchseite rechts">
+      <h1>Tag 01</h1>
+      <p>Hier beginnt Esats Geschichte ...</p>
+    </div>
 
-    function buchOeffnen() {
-      button.style.display = "none";
-      hinweis.style.display = "none";
-      video.style.display = "block";
-      startbild.style.display = "none";
+    <div class="buchmitte"></div>
 
-      video.currentTime = 0;
-      video.play().catch(() => {
-        video.controls = true;
-      });
-    }
+    <div id="blatt" class="blatt" onclick="umblattern()">
+      <div class="blattseite">
+        <h2>Tag 01</h2>
+        <p>Der Anfang einer besonderen Geschichte ...</p>
+        <small>Zum Umblättern klicken →</small>
+      </div>
+      <div class="blattseite rueck">
+        <h2>Seite 2</h2>
+        <p>Hier geht Esats Geschichte weiter ...</p>
+      </div>
+    </div>
+  </div>
 
-    video.addEventListener("ended", () => {
-      video.style.display = "none";
-      offenesbuch.style.display = "block";
-      seitenbereich.style.display = "block";
+  <div class="steuerung">
+    <button onclick="zurueck()">← Zurückblättern</button>
+    <button onclick="lesemodusSchliessen()">✕ Schließen</button>
+  </div>
+</section>
+
+<script>
+  const video = document.getElementById("buchvideo");
+  const startbild = document.getElementById("startbild");
+  const offenesbuch = document.getElementById("offenesbuch");
+  const buchbutton = document.getElementById("buchbutton");
+  const hinweis = document.getElementById("hinweis");
+  const seitenklick = document.getElementById("seitenklick");
+  const lesemodus = document.getElementById("lesemodus");
+  const blatt = document.getElementById("blatt");
+
+  function buchOeffnen() {
+    buchbutton.style.display = "none";
+    hinweis.style.display = "none";
+    startbild.style.display = "none";
+    video.style.display = "block";
+    video.currentTime = 0;
+    video.play().catch(() => { video.controls = true; });
+  }
+
+  video.addEventListener("ended", () => {
+    video.style.display = "none";
+    offenesbuch.style.display = "block";
+    seitenklick.style.display = "block";
+  });
+
+  function lesemodusOeffnen() {
+    lesemodus.style.display = "flex";
+    requestAnimationFrame(() => {
+      lesemodus.classList.add("aktiv");
     });
+  }
 
-    function seiteUmblattern() {
-      testseite.classList.toggle("umgeblattert");
-      zurueck.style.display =
-        testseite.classList.contains("umgeblattert")
-        ? "block" : "none";
-    }
+  function lesemodusSchliessen() {
+    lesemodus.classList.remove("aktiv");
+    setTimeout(() => {
+      lesemodus.style.display = "none";
+    }, 600);
+  }
 
-    function zurueckBlattern() {
-      testseite.classList.remove("umgeblattert");
-      zurueck.style.display = "none";
-    }
-  </script>
+  function umblattern() {
+    blatt.classList.toggle("umgeblattert");
+  }
 
+  function zurueck() {
+    blatt.classList.remove("umgeblattert");
+  }
+</script>
 </body>
 </html>
