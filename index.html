@@ -643,23 +643,39 @@
       ]
     },
     {
-      tag: "Tag 02 – Testeintrag",
-      titel: "Ein neuer Morgen",
-      inhalt: [
-        {
-          typ: "text",
-          text: "Liebes Tagebuch,"
-        },
-        {
-          typ: "text",
-          text: "heute beginnt ein neuer Abschnitt. Manchmal frage ich mich, wie viel sich in sechs Jahren verändern kann."
-        },
-        {
-          typ: "text",
-          text: "Vielleicht ist es an der Zeit, meine Geschichte wieder aufzuschreiben."
-        }
-      ]
+     
+{
+  tag: "Tag 02 – Belastungstest",
+  titel: "Ein Tag voller unerwarteter Ereignisse",
+  inhalt: [
+    {
+      typ: "text",
+      text: "Liebes Tagebuch,"
     },
+    ...Array.from({ length: 8 }, (_, i) => ({
+      typ: "text",
+      text: `Abschnitt ${i + 1}: Heute war einer dieser Tage, an denen einfach alles anders lief als geplant. Schon am Morgen hatte ich das Gefühl, dass irgendetwas passieren würde. Ich machte mich auf den Weg, während mir tausend Gedanken durch den Kopf gingen. Die Straßen waren voller Menschen und trotzdem fühlte ich mich seltsam allein. Ich fragte mich, wie mein Leben wohl in einem Jahr aussehen würde und ob ich bis dahin endlich die Antworten finden würde, nach denen ich schon so lange suche.`
+    })),
+    {
+      typ: "bild",
+      datei: "startseite.png",
+      alt: "Testbild 1"
+    },
+    ...Array.from({ length: 8 }, (_, i) => ({
+      typ: "text",
+      text: `Abschnitt ${i + 9}: Nach einer Weile blieb ich stehen und betrachtete meine Umgebung. Irgendwie hatte ich das Gefühl, dass ich einen wichtigen Moment gerade erst begreifen musste. Vielleicht lag es am Wetter, vielleicht an meinen Erinnerungen oder vielleicht einfach daran, dass ich in letzter Zeit viel zu wenig geschlafen hatte. Jedenfalls wusste ich, dass ich diesen Tag nicht so schnell vergessen würde.`
+    })),
+    {
+      typ: "bild",
+      datei: "buch-offen.png",
+      alt: "Testbild 2"
+    },
+    ...Array.from({ length: 8 }, (_, i) => ({
+      typ: "text",
+      text: `Abschnitt ${i + 17}: Am Abend setzte ich mich schließlich an meinen Schreibtisch und öffnete mein Tagebuch. Ich wollte alles festhalten, bevor die Erinnerungen verblassen. Manche Dinge ergeben erst einen Sinn, wenn man sie aufschreibt. Vielleicht werde ich eines Tages zurückblättern und verstehen, warum genau dieser Tag so wichtig war. Bis dahin bleibt mir nichts anderes übrig, als weiterzumachen und zu sehen, was morgen passiert.`
+    }))
+  ]
+},
     {
       tag: "Tag 03 – Testeintrag",
       titel: "Alte Erinnerungen",
