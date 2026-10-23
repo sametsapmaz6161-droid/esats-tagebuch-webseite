@@ -542,6 +542,25 @@ body {
 .sperrkarte button { background:#392117; color:#ffe0ad; padding:11px 23px; border:1px solid #c8a16d; border-radius:7px; cursor:pointer; }
 .steuerung .register-eintrag.gesperrt { opacity:.53; }
 
+
+/* VERWISCHTE ZUKUENFTIGE KAPITEL */
+.steuerung .register-eintrag.verwischt { cursor:not-allowed; opacity:.72; position:relative; overflow:hidden; }
+.register-eintrag.verwischt .register-titel { display:block; filter:blur(6px); user-select:none; pointer-events:none; }
+.register-eintrag.verwischt::after { content:"🔒"; position:absolute; right:9px; top:50%; transform:translateY(-50%); font-size:15px; }
+/* TESTSCHALTER AUF DER STARTSEITE */
+.test-ecke { position:fixed; right:18px; bottom:18px; z-index:50; display:flex; align-items:center; gap:10px; padding:10px 14px; color:#f8e6c9; background:#27180de6; border:1px solid #9e7d57; border-radius:12px; font:14px Georgia,serif; box-shadow:0 5px 18px #0008; }
+.test-ecke[hidden] { display:none!important; }
+.test-schalter { position:relative; display:inline-flex; align-items:center; width:48px; height:27px; border:1px solid #ac9071; border-radius:20px; background:#6b5b4b; cursor:pointer; padding:2px; }
+.test-schalter::after { content:""; width:21px; height:21px; background:#f5e4cb; border-radius:50%; transition:transform .2s; }
+.test-schalter[aria-checked="true"] { background:#557455; }
+.test-schalter[aria-checked="true"]::after { transform:translateX(20px); }
+.test-dialog { position:fixed; inset:0; z-index:100010; background:#100a08dc; display:none; align-items:center; justify-content:center; padding:20px; }
+.test-dialog.offen { display:flex; }
+.test-dialog-inner { background:#fbf1db; color:#714322; width:min(380px,100%); padding:26px; border:2px solid #8d704e; border-radius:10px; font-family:Georgia,serif; }
+.test-dialog-inner input { display:block; width:100%; margin:12px 0; padding:12px; font-size:16px; border:1px solid #a98d6d; border-radius:6px; background:#fffaf0; }
+.test-dialog-inner button { padding:9px 14px; margin-right:8px; background:#392117; color:#ffe0ad; border:1px solid #c8a16d; border-radius:6px; cursor:pointer; }
+.test-fehler { min-height:18px; color:#9d2626; font-size:13px; }
+
 </style>
 </head>
 
@@ -699,6 +718,13 @@ body {
   <p id="sperrText">Die Story geht morgen um 20 Uhr weiter.</p>
   <button type="button" onclick="sperreSchliessen()">Zurück zum Tagebuch</button>
  </div>
+</div>
+
+
+<div class="test-ecke" id="testEcke"><span>Testmodus</span><button type="button" id="testSchalter" class="test-schalter" role="switch" aria-label="Testmodus" aria-checked="false"></button></div>
+<div class="test-dialog" id="testDialog" role="dialog" aria-modal="true" aria-label="Testmodus freischalten">
+ <div class="test-dialog-inner"><h2>🔐 Testmodus</h2><p>Bitte Passwort eingeben, um alle Kapitel freizuschalten.</p>
+ <form id="testForm"><input id="testPasswort" type="password" autocomplete="off" placeholder="Passwort" required><div class="test-fehler" id="testFehler" aria-live="polite"></div><button type="submit">Freischalten</button><button type="button" id="testAbbrechen">Abbrechen</button></form></div>
 </div>
 
 <div id="messbereich" class="messbereich">
@@ -4060,16 +4086,42 @@ function freischaltDatum(kapitelIndex) {
   const [j,m,t] = ERSTER_BESUCH.split("-").map(Number);
   return new Date(j, m-1, t + kapitelIndex, 20, 0, 0, 0);
 }
-/* Entwickler-Testmodus: ?testmodus=an / ?testmodus=aus in der URL.
-   Einstellung gilt nur für diesen Browser und bleibt nach Neuladen erhalten. */
+/* Lokaler Testmodus: Aktivierung nur ueber Passwortdialog auf der Startseite.
+   Achtung: Clientseitiges Passwort ist im Seitenquelltext einsehbar. */
 const TESTMODUS_SCHLUESSEL = "esats-tagebuch-testmodus-v1";
-const testParameter = new URLSearchParams(window.location.search).get("testmodus");
-if (testParameter === "an" || testParameter === "aus") {
-  try { localStorage.setItem(TESTMODUS_SCHLUESSEL, testParameter === "an" ? "1" : "0"); } catch(e) {}
-}
+const TEST_PASSWORT = "Evelyn260426";
 function testmodusAktiv() {
-  try { return localStorage.getItem(TESTMODUS_SCHLUESSEL) === "1"; } catch(e) { return testParameter === "an"; }
+  try { return sessionStorage.getItem(TESTMODUS_SCHLUESSEL) === "1"; } catch(e) { return false; }
 }
+function testmodusSetzen(aktiv) {
+  try { sessionStorage.setItem(TESTMODUS_SCHLUESSEL, aktiv ? "1" : "0"); } catch(e) {}
+  document.getElementById("testSchalter").setAttribute("aria-checked", String(aktiv));
+  if (typeof kapitelRegisterFuellen === "function") kapitelRegisterFuellen();
+  if (typeof seitenAnzeigen === "function" && seiten.length) {
+    aktuelleDoppelseite = Math.min(aktuelleDoppelseite, Math.max(0, anzahlDoppelseiten() - 1));
+    seitenAnzeigen();
+  }
+}
+const testSchalter = document.getElementById("testSchalter");
+const testDialog = document.getElementById("testDialog");
+testSchalter.setAttribute("aria-checked", String(testmodusAktiv()));
+testSchalter.addEventListener("click", () => {
+  if (testmodusAktiv()) { testmodusSetzen(false); return; }
+  document.getElementById("testFehler").textContent = "";
+  document.getElementById("testPasswort").value = "";
+  testDialog.classList.add("offen");
+  document.getElementById("testPasswort").focus();
+});
+function testDialogSchliessen() { testDialog.classList.remove("offen"); }
+document.getElementById("testAbbrechen").addEventListener("click", testDialogSchliessen);
+testDialog.addEventListener("click", e => { if (e.target === testDialog) testDialogSchliessen(); });
+document.getElementById("testForm").addEventListener("submit", e => {
+  e.preventDefault();
+  if (document.getElementById("testPasswort").value === TEST_PASSWORT) {
+    testmodusSetzen(true); testDialogSchliessen();
+  } else document.getElementById("testFehler").textContent = "Falsches Passwort.";
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && testDialog.classList.contains("offen")) testDialogSchliessen(); });
 function freieKapitel() {
   if (testmodusAktiv()) return eintraege.length;
   let frei = 1;
@@ -4082,7 +4134,7 @@ function naechsteFreischaltung() {
   const datum = freischaltDatum(frei);
   const morgen = new Date(); morgen.setDate(morgen.getDate()+1);
   const istMorgen = datum.toDateString() === morgen.toDateString();
-  return `Das nächste Kapitel ist ${istMorgen ? "morgen" : "am " + datum.toLocaleDateString("de-DE")} um 20 Uhr verfügbar.`;
+  return `Die Story ist ${istMorgen ? "morgen" : "am " + datum.toLocaleDateString("de-DE")} um 20 Uhr verfügbar.`;
 }
 function schlossSVG() {
  return `<svg class="schlosszeichnung" viewBox="0 0 90 100" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 44V28 Q23 8 45 8 Q67 8 66 28V44 M33 44V29 Q33 19 45 19 Q57 19 57 29V44" stroke-width="3"/><path d="M17 43 Q45 39 73 43 L74 88 Q46 94 16 88 Z" stroke-width="3"/><path d="M45 57 Q35 58 41 68 L39 77 L51 77 L49 68 Q55 59 45 57 Z" stroke-width="2"/></svg>`;
@@ -4248,6 +4300,7 @@ video.addEventListener("ended", () => {
 /* LESEMODUS ÖFFNEN */
 
 async function lesemodusOeffnen() {
+  document.getElementById("testEcke").hidden = true;
   if (animationLaeuft) {
     return;
   }
@@ -4273,6 +4326,7 @@ async function lesemodusOeffnen() {
 /* LESEMODUS SCHLIESSEN */
 
 function lesemodusSchliessen() {
+  document.getElementById("testEcke").hidden = false;
   kapitelRegisterSchliessen();
   if (animationLaeuft) {
     return;
@@ -4465,14 +4519,22 @@ function kapitelRegisterFuellen() {
   if (!kapitelListe) return;
   kapitelListe.replaceChildren();
   eintraege.forEach((eintrag, index) => {
+    const frei = index < freieKapitel();
     const taste = document.createElement("button");
     taste.type = "button";
-    taste.className = "register-eintrag";
+    taste.className = "register-eintrag" + (frei ? "" : " verwischt");
     taste.dataset.kapitel = String(index);
-    taste.textContent = eintrag.titel || `Kapitel ${index + 1}`;
-    taste.title = taste.textContent;
-    if (index >= freieKapitel()) { taste.classList.add("gesperrt"); taste.textContent = "🔒 " + taste.textContent; }
-    taste.addEventListener("click", () => kapitelSpringen(index));
+    const titel = document.createElement("span");
+    titel.className = "register-titel";
+    titel.textContent = eintrag.titel || `Kapitel ${index + 1}`;
+    taste.appendChild(titel);
+    if (frei) {
+      taste.title = titel.textContent;
+      taste.addEventListener("click", () => kapitelSpringen(index));
+    } else {
+      taste.setAttribute("aria-label", `Kapitel ${index + 1} gesperrt`);
+      taste.addEventListener("click", () => sperreOeffnen());
+    }
     kapitelListe.appendChild(taste);
   });
   kapitelAktivMarkieren();
@@ -4483,14 +4545,16 @@ function kapitelAktivMarkieren() {
   let aktiv = -1;
   kapitelStartseiten.forEach((start, i) => { if (start <= seitenindex + 1) aktiv = i; });
   kapitelListe.querySelectorAll(".register-eintrag").forEach((taste, i) => {
-    taste.classList.toggle("aktiv", i === aktiv);
-    if (i === aktiv) taste.setAttribute("aria-current", "true");
+    const kapitelIndex = Number(taste.dataset.kapitel);
+    taste.classList.toggle("aktiv", kapitelIndex === aktiv);
+    if (kapitelIndex === aktiv) taste.setAttribute("aria-current", "true");
     else taste.removeAttribute("aria-current");
   });
 }
 function kapitelRegisterUmschalten() {
   if (animationLaeuft) return;
   const oeffnen = kapitelRegister.hidden;
+  if (oeffnen) kapitelRegisterFuellen();
   kapitelRegister.hidden = !oeffnen;
   kapitelButton.setAttribute("aria-expanded", String(oeffnen));
   if (oeffnen) kapitelRegister.querySelector(".register-eintrag.aktiv")?.scrollIntoView({block:"nearest"});
