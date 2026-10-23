@@ -438,6 +438,34 @@ body {
     font-size: 12px;
   }
 }
+
+/* BILDER IN GROSSANSICHT */
+.bildgruppe .tagebuchbild { cursor: zoom-in; }
+.bild-lupe {
+  position: fixed; inset: 0; z-index: 99999;
+  display: none; align-items: center; justify-content: center;
+  padding: 65px 28px 45px;
+  background: rgba(12, 7, 5, .88);
+  backdrop-filter: blur(10px);
+}
+.bild-lupe.offen { display: flex; }
+.bild-lupe img {
+  display: block; max-width: 100%; max-height: 100%;
+  width: auto; height: auto; object-fit: contain;
+  border-radius: 6px; box-shadow: 0 12px 45px rgba(0,0,0,.5);
+}
+.bild-lupe-schliessen {
+  position: absolute; top: 15px; right: 20px;
+  background: rgba(255,255,255,.16); color: #fff;
+  border: 1px solid rgba(255,255,255,.4); border-radius: 50%;
+  width: 43px; height: 43px; font-size: 25px; cursor: pointer;
+}
+.bild-lupe-beschriftung {
+  position: absolute; bottom: 12px; left: 24px; right: 24px;
+  color: #fff4e6; text-align: center; font: italic 15px Georgia,serif;
+  pointer-events: none;
+}
+
 </style>
 </head>
 
@@ -569,6 +597,13 @@ body {
   </div>
 
 </section>
+
+
+<div id="bildLupe" class="bild-lupe" role="dialog" aria-modal="true" aria-label="Bild in Großansicht" aria-hidden="true">
+  <button type="button" class="bild-lupe-schliessen" id="bildLupeSchliessen" aria-label="Großansicht schließen">×</button>
+  <img id="bildLupeBild" alt="">
+  <div id="bildLupeText" class="bild-lupe-beschriftung"></div>
+</div>
 
 <div id="messbereich" class="messbereich">
   <div id="messinhalt" class="seiteninhalt"></div>
@@ -4149,6 +4184,46 @@ window.addEventListener("resize", () => {
 
     seitenAnzeigen();
   }, 250);
+});
+
+
+/* GROSSANSICHT: Bild anklicken, Escape oder außerhalb klicken zum Schließen */
+const bildLupe = document.getElementById("bildLupe");
+const bildLupeBild = document.getElementById("bildLupeBild");
+const bildLupeText = document.getElementById("bildLupeText");
+const bildLupeSchliessen = document.getElementById("bildLupeSchliessen");
+
+function bildGrossOeffnen(bild) {
+  bildLupeBild.src = bild.currentSrc || bild.src;
+  bildLupeBild.alt = bild.alt || "Tagebuchbild";
+  const untertitel = bild.closest(".bildgruppe")?.querySelector(".bildunterschrift");
+  bildLupeText.textContent = untertitel?.textContent || "";
+  bildLupe.classList.add("offen");
+  bildLupe.setAttribute("aria-hidden", "false");
+  bildLupeSchliessen.focus();
+}
+function bildGrossSchliessen() {
+  bildLupe.classList.remove("offen");
+  bildLupe.setAttribute("aria-hidden", "true");
+  bildLupeBild.removeAttribute("src");
+}
+// Capture verhindert, dass der Bildklick zugleich eine Buchseite umblättert.
+lesemodus.addEventListener("click", (ereignis) => {
+  const bild = ereignis.target.closest(".bildgruppe .tagebuchbild");
+  if (!bild || !lesemodus.classList.contains("aktiv")) return;
+  ereignis.preventDefault();
+  ereignis.stopPropagation();
+  bildGrossOeffnen(bild);
+}, true);
+bildLupeSchliessen.addEventListener("click", bildGrossSchliessen);
+bildLupe.addEventListener("click", (ereignis) => {
+  if (ereignis.target === bildLupe) bildGrossSchliessen();
+});
+document.addEventListener("keydown", (ereignis) => {
+  if (ereignis.key === "Escape" && bildLupe.classList.contains("offen")) {
+    ereignis.preventDefault();
+    bildGrossSchliessen();
+  }
 });
 
 </script>
