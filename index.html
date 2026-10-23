@@ -14,9 +14,7 @@
   --blaetterdauer: 1150ms;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -242,8 +240,9 @@ body {
 
 .tagebuchbild {
   display: block;
-  width: 100%;
+  width: auto;
   height: auto;
+  max-width: 100%;
   max-height: 300px;
   object-fit: contain;
   margin: 12px auto 20px;
@@ -327,13 +326,8 @@ body {
   pointer-events: none;
 }
 
-.seitenabdeckung.links {
-  left: 0;
-}
-
-.seitenabdeckung.rechts {
-  right: 0;
-}
+.seitenabdeckung.links { left: 0; }
+.seitenabdeckung.rechts { right: 0; }
 
 /* KLICKBEREICHE */
 
@@ -348,13 +342,8 @@ body {
   cursor: pointer;
 }
 
-.klickbereich.vor {
-  right: 0;
-}
-
-.klickbereich.zurueck {
-  left: 0;
-}
+.klickbereich.vor { right: 0; }
+.klickbereich.zurueck { left: 0; }
 
 /* STEUERUNG */
 
@@ -607,6 +596,8 @@ let aktuelleDoppelseite = 0;
 let animationLaeuft = false;
 let seiten = [];
 
+const bildDimensionen = new Map();
+
 /*
   TAGEBUCHEINTRÄGE
 
@@ -729,11 +720,18 @@ function blockHTML(block) {
     const quelle = htmlSicher(block.datei);
     const alt = htmlSicher(block.alt || "");
 
+    const groesse = bildDimensionen.get(block.datei);
+
+    const dimensionen = groesse
+      ? `width="${groesse.breite}" height="${groesse.hoehe}"`
+      : "";
+
     return `
       <img
         class="tagebuchbild"
         src="${quelle}"
         alt="${alt}"
+        ${dimensionen}
       >
     `;
   }
@@ -776,8 +774,8 @@ function messbereichAnpassen() {
 /*
   PRÜFEN, OB INHALT AUF EINE SEITE PASST
 
-  Unten bleibt ein kleiner Abstand
-  zur Seitenzahl erhalten.
+  Berücksichtigt auch den unteren
+  Außenabstand des letzten Elements.
 */
 
 function passtAufSeite(html) {
@@ -785,13 +783,12 @@ function passtAufSeite(html) {
 
   const elemente = [...messinhalt.children];
 
-  if (elemente.length === 0) {
-    return true;
-  }
+  if (elemente.length === 0) return true;
 
   const letztes = elemente[elemente.length - 1];
 
   const stil = getComputedStyle(messinhalt);
+  const letzterStil = getComputedStyle(letztes);
 
   const unterkante =
     messinhalt.getBoundingClientRect().bottom;
@@ -799,12 +796,15 @@ function passtAufSeite(html) {
   const paddingUnten =
     parseFloat(stil.paddingBottom) || 0;
 
+  const marginUnten =
+    parseFloat(letzterStil.marginBottom) || 0;
+
   const inhaltUnterkante =
     letztes.getBoundingClientRect().bottom;
 
   const sicherheitsabstand = 18;
 
-  return inhaltUnterkante <=
+  return inhaltUnterkante + marginUnten <=
     unterkante -
     paddingUnten -
     sicherheitsabstand;
@@ -813,9 +813,8 @@ function passtAufSeite(html) {
 /*
   TEXT AUTOMATISCH AUFTEILEN
 
-  Möglichst viele Wörter auf der Seite
-  unterbringen, ohne zusätzliche
-  Satzende-Regel.
+  Es werden möglichst viele Wörter
+  auf der aktuellen Seite untergebracht.
 */
 
 function textAufteilen(text, kopf, bisher) {
@@ -861,8 +860,9 @@ function textAufteilen(text, kopf, bisher) {
 /*
   EINEN TAGEBUCHEINTRAG AUFTEILEN
 
-  Text darf über mehrere Seiten laufen.
-  Bilder bleiben vollständig zusammen.
+  Bilder werden nicht geteilt.
+  Wenn sie nicht passen, wechseln
+  sie vollständig auf die nächste Seite.
 */
 
 function eintragAufteilen(eintrag) {
@@ -890,8 +890,6 @@ function eintragAufteilen(eintrag) {
       ) {
         inhalt += bild;
       } else {
-        // Bild vollständig auf die nächste Seite
-
         seiteAbschliessen();
         inhalt += bild;
       }
@@ -962,12 +960,7 @@ function eintragAufteilen(eintrag) {
   return ergebnis;
 }
 
-/*
-  ALLE BUCHSEITEN ERZEUGEN
-
-  Erste linke Seite: Steckbrief.
-  Danach folgen die Tagebucheinträge.
-*/
+/* ALLE BUCHSEITEN ERZEUGEN */
 
 function alleSeitenBerechnen() {
   messbereichAnpassen();
@@ -1067,8 +1060,9 @@ function seitenAnzeigen() {
 /*
   BILDER VORLADEN
 
-  Vor der Seitenberechnung werden
-  die Bilddateien geladen.
+  Die Originalabmessungen werden
+  gespeichert, damit der Browser
+  beim Messen die Proportionen kennt.
 */
 
 async function bilderVorladen() {
@@ -1090,13 +1084,23 @@ async function bilderVorladen() {
       return new Promise(resolve => {
         const bild = new Image();
 
-        bild.onload = resolve;
-        bild.onerror = resolve;
+        bild.onload = () => {
+          bildDimensionen.set(datei, {
+            breite: bild.naturalWidth,
+            hoehe: bild.naturalHeight
+          });
 
+          resolve();
+        };
+
+        bild.onerror = resolve;
         bild.src = datei;
 
-        if (bild.complete) {
-          resolve();
+        if (
+          bild.complete &&
+          bild.naturalWidth > 0
+        ) {
+          bild.onload();
         }
       });
     })
