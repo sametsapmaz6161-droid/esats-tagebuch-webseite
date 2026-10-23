@@ -562,59 +562,12 @@ body {
 .test-fehler { min-height:18px; color:#9d2626; font-size:13px; }
 
 
-/* SCHLUSS: Buch klappt zu, danach erscheint das letzte Bild */
-.schluss-szene {
-  position: fixed; inset: 0; z-index: 100020;
-  display: none; align-items: center; justify-content: center;
-  overflow: hidden; background: #160d0a;
-}
-.schluss-szene.sichtbar { display: flex; }
-.schluss-rahmen {
-  position: absolute; inset: 0; display: flex;
-  align-items: center; justify-content: center;
-  background: radial-gradient(ellipse, #5a382c 0%, #160d0a 78%);
-  opacity: 1; transition: opacity .8s ease;
-}
-.schluss-buch {
-  position: relative; width: min(76vw, 1050px); aspect-ratio: 1.65;
-  perspective: 1900px; filter: drop-shadow(0 22px 28px #000b);
-  transform-origin: center; animation: schlussBuchKleiner 2.25s ease-in-out forwards;
-}
-.schluss-haelfte {
-  position: absolute; top: 0; height: 100%; width: 50%;
-  background: #fbf1db; border: 6px solid #65402b;
-}
-.schluss-links { left: 0; border-radius: 13px 2px 2px 13px; box-shadow: inset -22px 0 30px #6b422c66; }
-.schluss-rechts {
-  left: 50%; border-radius: 2px 13px 13px 2px;
-  transform-origin: left center; backface-visibility: visible;
-  animation: schlussZuklappen 1.75s cubic-bezier(.45,.05,.2,1) forwards;
-  box-shadow: inset 20px 0 28px #6b422c55;
-}
-.schluss-rechts::after {
-  content: ''; position: absolute; inset: 0; background: #d38f9d;
-  opacity: 0; animation: schlussDeckel 1.75s ease forwards;
-}
-@keyframes schlussZuklappen { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(-180deg); } }
-@keyframes schlussDeckel { 0%, 55% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes schlussBuchKleiner { 0%, 55% { transform: scale(1); } 100% { transform: scale(.72); } }
-.schluss-endbild {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: contain; opacity: 0; transition: opacity 1.35s ease;
-  background: #160d0a;
-}
-.schluss-szene.endbild-aktiv .schluss-endbild { opacity: 1; }
-.schluss-szene.endbild-aktiv .schluss-rahmen { opacity: 0; }
-.schluss-neustart {
-  position: absolute; bottom: 17px; right: 18px; z-index: 2;
-  background: #27180dcc; color: #ffe0ad; border: 1px solid #c8a16d;
-  border-radius: 8px; padding: 10px 15px; cursor: pointer;
-  opacity: 0; pointer-events: none; transition: opacity .5s ease;
-}
-.schluss-szene.endbild-aktiv .schluss-neustart { opacity: 1; pointer-events: auto; }
-@media (prefers-reduced-motion: reduce) {
-  .schluss-buch, .schluss-rechts, .schluss-rechts::after { animation-duration: .01ms; }
-}
+/* Schlussvideo nach Tag 30 */
+.schlussvideo-szene { position:fixed; inset:0; z-index:100020; background:#160d0a; display:none; overflow:hidden; }
+.schlussvideo-szene.sichtbar { display:block; }
+.schlussvideo-szene video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.schlussvideo-neustart { position:absolute; z-index:2; bottom:22px; left:50%; transform:translateX(-50%); padding:12px 22px; border:1px solid #c8a16d; border-radius:9px; background:#392117e8; color:#ffe0ad; font:16px Georgia,serif; cursor:pointer; display:none; }
+.schlussvideo-szene.beendet .schlussvideo-neustart { display:block; }
 
 </style>
 </head>
@@ -783,13 +736,11 @@ body {
 </div>
 
 
-<!-- Endframe nach dem letzten Umblättern -->
-<div id="schlussSzene" class="schluss-szene" aria-label="Ende des Tagebuchs" aria-hidden="true">
-  <div class="schluss-rahmen" aria-hidden="true">
-    <div class="schluss-buch"><div class="schluss-haelfte schluss-links"></div><div class="schluss-haelfte schluss-rechts"></div></div>
-  </div>
-  <img class="schluss-endbild" src="schlussbild.png" alt="Geschlossenes Tagebuch von Esat auf dem Schreibtisch">
-  <button class="schluss-neustart" type="button" onclick="tagebuchNeuStarten()">↻ Noch einmal lesen</button>
+<div id="schlussvideoSzene" class="schlussvideo-szene" aria-label="Schlussanimation" aria-hidden="true">
+  <video id="schlussvideo" playsinline preload="auto" aria-label="Tagebuch wird geschlossen">
+    <source src="endszene.mp4" type="video/mp4">
+  </video>
+  <button type="button" class="schlussvideo-neustart" onclick="tagebuchNeuStarten()">↻ Noch einmal lesen</button>
 </div>
 
 <div id="messbereich" class="messbereich">
@@ -4411,16 +4362,10 @@ function vorblattern() {
     return;
   }
 
-  if (
-    aktuelleDoppelseite >=
-    anzahlDoppelseiten() - 1
-  ) {
-    // Nur nach dem tatsächlich letzten freigeschalteten Kapitel schließen.
-    if (freieKapitel() >= eintraege.length) {
-      tagebuchSchliessenAmEnde();
-    } else {
-      sperreOeffnen();
-    }
+  if (aktuelleDoppelseite >= anzahlDoppelseiten() - 1) {
+    // Schlussvideo nur dann, wenn wirklich alle 30 Kapitel freigeschaltet sind.
+    if (freieKapitel() >= eintraege.length) tagebuchSchliessenAmEnde();
+    else sperreOeffnen();
     return;
   }
 
@@ -4745,26 +4690,44 @@ document.addEventListener("keydown", event => {
 });
 
 
-/* SCHLUSSANIMATION – erst nach der letzten Tagebuchseite */
+/* Schlussvideo: erst beim Weiterklicken nach der allerletzten Doppelseite. */
 let schlussLaeuft = false;
+const schlussvideoSzene = document.getElementById("schlussvideoSzene");
+const schlussvideo = document.getElementById("schlussvideo");
+
 function tagebuchSchliessenAmEnde() {
-  if (schlussLaeuft || animationLaeuft) return;
+  if (schlussLaeuft || animationLaeuft || freieKapitel() < eintraege.length) return;
   schlussLaeuft = true;
   kapitelRegisterSchliessen();
-  const szene = document.getElementById("schlussSzene");
-  szene.classList.remove("sichtbar", "endbild-aktiv");
-  void szene.offsetWidth; // Animation bei erneutem Durchlesen neu starten
-  szene.classList.add("sichtbar");
-  szene.setAttribute("aria-hidden", "false");
-  setTimeout(() => {
-    if (schlussLaeuft) szene.classList.add("endbild-aktiv");
-  }, 1950);
+  schlussvideoSzene.classList.remove("beendet");
+  schlussvideoSzene.classList.add("sichtbar");
+  schlussvideoSzene.setAttribute("aria-hidden", "false");
+  schlussvideo.currentTime = 0;
+  schlussvideo.muted = false;
+  const versuch = schlussvideo.play();
+  if (versuch && typeof versuch.catch === "function") {
+    versuch.catch(() => {
+      // Bei restriktiven Browsern ohne Ton abspielen.
+      schlussvideo.muted = true;
+      schlussvideo.play().catch(() => schlussvideoSzene.classList.add("beendet"));
+    });
+  }
 }
+
+schlussvideo.addEventListener("ended", () => {
+  // Video bleibt auf dem letzten Bild stehen, kein Zurückspringen.
+  schlussvideoSzene.classList.add("beendet");
+});
+schlussvideo.addEventListener("error", () => {
+  schlussvideoSzene.classList.add("beendet");
+});
+
 function tagebuchNeuStarten() {
+  schlussvideo.pause();
+  schlussvideo.currentTime = 0;
   schlussLaeuft = false;
-  const szene = document.getElementById("schlussSzene");
-  szene.classList.remove("sichtbar", "endbild-aktiv");
-  szene.setAttribute("aria-hidden", "true");
+  schlussvideoSzene.classList.remove("sichtbar", "beendet");
+  schlussvideoSzene.setAttribute("aria-hidden", "true");
   aktuelleDoppelseite = 0;
   seitenAnzeigen();
 }
