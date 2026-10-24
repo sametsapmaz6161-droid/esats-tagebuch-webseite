@@ -1,5 +1,5 @@
 
 {
-  "startzeit": null,
-  "letzte_mail": 0
+  "start_at": null,
+  "last_notified": 0
 }
