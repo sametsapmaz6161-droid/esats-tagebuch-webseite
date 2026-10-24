@@ -1,11 +1,7 @@
+
 name: Esats Tagebuch - Kapitelbenachrichtigungen
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - index.html
-      - .github/workflows/kapitel-mail.yml
   schedule:
     - cron: '2,7,12,17,22,27,32,37,42,47,52,57 * * * *'
   workflow_dispatch:
@@ -24,7 +20,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
-      - name: Kapitelstart setzen oder E-Mails senden
+
+      - name: Kapitel-E-Mails prüfen und senden
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
