@@ -3,6 +3,12 @@ name: Esats Tagebuch - Kapitelbenachrichtigungen
 
 on:
   workflow_dispatch:
+    inputs:
+      reset_kapitel:
+        description: "Alle 30 Kapitel neu starten"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -19,9 +25,10 @@ jobs:
         with:
           persist-credentials: true
 
-      - name: Kapitel-E-Mails prüfen und senden
+      - name: Kapitel-Timer starten oder E-Mails senden
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           EVENT_NAME: ${{ github.event_name }}
+          RESET_KAPITEL: ${{ inputs.reset_kapitel }}
         run: python .github/scripts/kapitel_mail.py
