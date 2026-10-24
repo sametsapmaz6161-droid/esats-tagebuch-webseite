@@ -4735,7 +4735,7 @@ setInterval(() => {
   if (!animationLaeuft && lesemodus.classList.contains("aktiv")) {
     seitenAnzeigen(); kapitelRegisterFuellen();
   }
-}, 5000);
+}, 1000);
 
 document.addEventListener("keydown", event => {
   if (event.key === "Escape" && document.getElementById("sperrHinweis").classList.contains("offen")) { sperreSchliessen(); return; }
