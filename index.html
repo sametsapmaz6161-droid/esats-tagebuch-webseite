@@ -4750,7 +4750,7 @@ lesemodus.addEventListener("click", (ereignis) => {
   ereignis.stopPropagation();
   // Das Abschlussbild ist der einzige Auslöser für die Schlussanimation.
   // Bei allen anderen Bildern bleibt die gewohnte Großansicht erhalten.
-  const istLetztesBild = bild.getAttribute("src")?.split("/").pop() === "tag-30-abschluss.png.png";
+  const istLetztesBild = bild.getAttribute("src")?.split("/").pop() === "tag-30-abschluss.png";
   const istLetzteDoppelseite = aktuelleDoppelseite === anzahlDoppelseiten() - 1;
   if (istLetztesBild && istLetzteDoppelseite && freieKapitel() >= eintraege.length) {
     tagebuchSchliessenAmEnde();
