@@ -1,36 +1,32 @@
-
-name: Esats Tagebuch - Mailtest
+name: Esats Tagebuch - Kapitelbenachrichtigungen
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - .github/workflows/kapitel-mail.yml
+  schedule:
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: esats-kapitel-benachrichtigungen
+  cancel-in-progress: false
+
 jobs:
-  send-mail:
+  kapitel:
     runs-on: ubuntu-latest
     steps:
-      - name: Testmail senden
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Kapitelstart setzen oder E-Mails senden
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-        run: |
-          python - <<'PY'
-          import os
-          import smtplib
-          from email.message import EmailMessage
-
-          msg = EmailMessage()
-          msg["From"] = os.environ["GMAIL_USER"]
-          msg["To"] = "sametsapmaz6161@gmail.com"
-          msg["Subject"] = "Esats Tagebuch - E-Mail-Test"
-          msg.set_content(
-              "Der automatische E-Mail-Versand funktioniert!\n\n"
-              "https://sametsapmaz6161-droid.github.io/esats-tagebuch-webseite/"
-          )
-
-          with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-              smtp.login(
-                  os.environ["GMAIL_USER"],
-                  os.environ["GMAIL_APP_PASSWORD"]
-              )
-              smtp.send_message(msg)
-          PY
+          EVENT_NAME: ${{ github.event_name }}
+        run: python .github/scripts/kapitel_mail.py
