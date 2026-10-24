@@ -1,21 +1,23 @@
-"""Kapitel-Timer: Einmalig bei Deployment starten, später fällige E-Mails versenden."""
+"""Esats Tagebuch: Kapitel taeglich um 20:00 Uhr (Europe/Berlin) freigeben."""
 import json
 import os
 import smtplib
 import subprocess
-from datetime import datetime, timezone
+from datetime import datetime, timezone, time, timedelta
 from email.message import EmailMessage
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 STATUS = Path("kapitel-status.json")
 EMPFAENGER = "sametsapmaz6161@gmail.com"
 URL = "https://sametsapmaz6161-droid.github.io/esats-tagebuch-webseite/"
 KAPITEL = 30
-
+BERLIN = ZoneInfo("Europe/Berlin")
+# Der feste erste Veröffentlichungstermin: Samstag, 24. Oktober 2026, 20 Uhr MESZ.
+ERSTER_START = datetime(2026, 10, 24, 20, 0, tzinfo=BERLIN)
 
 def git(*args):
     subprocess.run(["git", *args], check=True)
-
 
 def speichern(status, nachricht):
     STATUS.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -27,25 +29,24 @@ def speichern(status, nachricht):
     git("commit", "-m", nachricht)
     git("push")
 
+def kapitel_termin(index):
+    tag = ERSTER_START.date() + timedelta(days=index)
+    return datetime.combine(tag, time(20, 0), tzinfo=BERLIN)
 
-def jetzt():
-    return datetime.now(timezone.utc)
-
-
-
-if os.environ.get("EVENT_NAME") == "push" or os.environ.get("RESET_KAPITEL") == "true":
-    # Der Zeitpunkt der Bereitstellung des neuen Kapitelplans ist die Startmarke.
-    status = {"start_at": jetzt().isoformat().replace("+00:00", "Z"), "last_notified": 0}
-    speichern(status, "Kapitel-Freischaltung starten [skip ci]")
-    print("Gemeinsamer Kapitelstart gesetzt:", status["start_at"])
+if os.environ.get("RESET_KAPITEL", "").lower() == "true":
+    status = {"start_at": ERSTER_START.isoformat(), "last_notified": 0}
+    speichern(status, "Taegliche Kapitel ab 24.10.2026 20 Uhr starten [skip ci]")
+    print("Alle Kapitel gesperrt bis:", status["start_at"])
 else:
     if not STATUS.exists():
-        raise SystemExit("kapitel-status.json fehlt. Zuerst den Workflow mit index.html committen.")
+        raise SystemExit("kapitel-status.json fehlt. Bitte zuerst Reset ausführen.")
     status = json.loads(STATUS.read_text(encoding="utf-8"))
-    start = datetime.fromisoformat(status["start_at"].replace("Z", "+00:00"))
-    minuten = max(0, int((jetzt() - start).total_seconds() // 60))
-    freigeschaltet = min(KAPITEL, 1 + minuten)
-    zuletzt = int(status.get("last_notified", 1))
+    # Schutz vor altem Minuten-Teststatus: niemals versehentlich Testkapitel mailen.
+    if datetime.fromisoformat(status["start_at"].replace("Z", "+00:00")) != ERSTER_START:
+        raise SystemExit("Noch alter Teststatus aktiv. Bitte den Reset-Workflow ausführen.")
+    jetzt = datetime.now(timezone.utc)
+    freigeschaltet = sum(jetzt >= kapitel_termin(i).astimezone(timezone.utc) for i in range(KAPITEL))
+    zuletzt = int(status.get("last_notified", 0))
     print(f"Freigeschaltet: {freigeschaltet}, zuletzt benachrichtigt: {zuletzt}")
     if freigeschaltet <= zuletzt:
         raise SystemExit(0)
