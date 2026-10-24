@@ -611,6 +611,26 @@ body {
 .info-blase p { margin:8px 0; }
 @media(max-width:650px) { .hinweis { font-size:clamp(13px,3vw,21px); padding:10px 13px; } .info-knopf { width:34px; height:34px; font-size:22px; } .info-blase { top:calc(3% + 39px); } }
 
+
+/* Abschlussgruß und gut sichtbarer Neustart */
+.schlussvideo-danke {
+  position: absolute; z-index: 2; left: 50%; bottom: 108px;
+  transform: translateX(-50%); display: none; white-space: nowrap;
+  color: #ffe7c2; text-shadow: 0 3px 14px #000, 0 1px 5px #000;
+  font: italic clamp(24px, 3vw, 46px) Georgia, serif;
+  text-align: center; pointer-events: none;
+}
+.schlussvideo-szene.beendet .schlussvideo-danke { display: block; }
+.schlussvideo-neustart {
+  font-size: clamp(19px, 2vw, 27px);
+  font-weight: bold; padding: 17px 30px; bottom: 28px;
+  box-shadow: 0 6px 24px #0009;
+}
+@media (max-width: 650px) {
+  .schlussvideo-danke { bottom: 105px; font-size: 25px; }
+  .schlussvideo-neustart { padding: 14px 20px; font-size: 19px; }
+}
+
 </style>
 </head>
 
@@ -795,6 +815,7 @@ body {
   <video id="schlussvideo" playsinline preload="auto" aria-label="Tagebuch wird geschlossen">
     <source src="endszene.mp4" type="video/mp4">
   </video>
+  <div class="schlussvideo-danke">♡ Danke fürs Lesen ♡</div>
   <button type="button" class="schlussvideo-neustart" onclick="tagebuchNeuStarten()">↻ Noch einmal lesen</button>
 </div>
 
@@ -3602,6 +3623,12 @@ const eintraege = [
         "text": "Das konnte nicht sein."
       },
       {
+        "typ": "bild",
+        "datei": "bilder/zusatz/tag-30(5).png",
+        "alt": "Zusatzbild Tag 30",
+        "bildunterschrift": "Moment mal ... dieses Gesicht. Diese Augen. Dieses Lächeln. Das kann doch nicht wahr sein. 😳"
+      },
+      {
         "typ": "text",
         "text": "Ich kannte diese Frau."
       },
@@ -3611,10 +3638,11 @@ const eintraege = [
       },
       {
         "typ": "bild",
-        "datei": "bilder/zusatz/tag-30(5).png",
+        "datei": "bilder/zusatz/tag-30(4).png",
         "alt": "Zusatzbild Tag 30",
-        "bildunterschrift": "Moment mal ... dieses Gesicht. Diese Augen. Dieses Lächeln. Das kann doch nicht wahr sein. 😳"
+        "bildunterschrift": "Jessica ... mit einem Baby im Arm. Und dieses Baby ist ausgerechnet mein Sohn. 💔"
       },
+
       {
         "typ": "text",
         "text": "Meine Jessica."
@@ -3631,12 +3659,7 @@ const eintraege = [
         "typ": "text",
         "text": "Ich spürte, wie mir langsam das Blut aus dem Gesicht wich. Saran erklärte mir schließlich, dass Jessica die leibliche Mutter unseres Sohnes war."
       },
-      {
-        "typ": "bild",
-        "datei": "bilder/zusatz/tag-30(4).png",
-        "alt": "Zusatzbild Tag 30",
-        "bildunterschrift": "Jessica ... mit einem Baby im Arm. Und dieses Baby ist ausgerechnet mein Sohn. 💔"
-      },
+
       {
         "typ": "text",
         "text": "Ich glaube, mein Gehirn hat in diesem Moment kurz aufgehört zu funktionieren."
