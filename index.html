@@ -4251,12 +4251,25 @@ function sperrVorschau() {
  if (index >= eintraege.length) return "";
  return `<div class="seiteninhalt"><div class="sperrseite"><span class="fortsetzung">Als Nächstes</span><h2>${htmlSicher(eintraege[index].titel)}</h2>${schlossSVG()}<p>${naechsteFreischaltung()}</p></div></div>`;
 }
+let sperrCountdownIntervall = null;
 function sperreOeffnen() {
- document.getElementById("sperrText").textContent = naechsteFreischaltung();
- const el = document.getElementById("sperrHinweis"); el.classList.add("offen"); el.setAttribute("aria-hidden","false");
+ const el = document.getElementById("sperrHinweis");
+ const text = document.getElementById("sperrText");
+ const countdownAktualisieren = () => {
+   text.textContent = naechsteFreischaltung();
+ };
+ countdownAktualisieren();
+ clearInterval(sperrCountdownIntervall);
+ sperrCountdownIntervall = setInterval(countdownAktualisieren, 1000);
+ el.classList.add("offen");
+ el.setAttribute("aria-hidden", "false");
 }
 function sperreSchliessen() {
- const el = document.getElementById("sperrHinweis"); el.classList.remove("offen"); el.setAttribute("aria-hidden","true");
+ const el = document.getElementById("sperrHinweis");
+ el.classList.remove("offen");
+ el.setAttribute("aria-hidden", "true");
+ clearInterval(sperrCountdownIntervall);
+ sperrCountdownIntervall = null;
 }
 function letzteErlaubteDoppelseite() {
  const frei = freieKapitel();
