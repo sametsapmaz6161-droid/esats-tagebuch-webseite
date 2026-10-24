@@ -580,6 +580,9 @@ body {
   text-align: center;
   box-shadow: 0 3px 14px rgba(55, 25, 15, .18);
 }
+/* Der Hinweis wird synchron mit dem Umblättern eingeblendet. */
+.letzte-seite-hinweis { opacity: 0; transition: opacity 1150ms linear; }
+.letzte-seite-hinweis.sichtbar { opacity: 1; }
 .letzte-seite-hinweis[hidden] { display: none !important; }
 @media (max-width: 650px) {
   .letzte-seite-hinweis { bottom: 2%; padding: 6px; font-size: 11px; }
@@ -4328,9 +4331,12 @@ function seitenAnzeigen() {
 
   kapitelAktivMarkieren();
   const istAllerletzteSeite = aktuelleDoppelseite === anzahlDoppelseiten() - 1
-    && freieKapitel() >= eintraege.length
-    && !animationLaeuft;
-  document.getElementById("letzteSeiteHinweis").hidden = !istAllerletzteSeite;
+    && freieKapitel() >= eintraege.length;
+  const abschlussHinweis = document.getElementById("letzteSeiteHinweis");
+  abschlussHinweis.hidden = !istAllerletzteSeite;
+  // Während der Blätteranimation bleibt die Meldung anfangs transparent.
+  // Nach Abschluss der Animation ist sie vollständig sichtbar.
+  abschlussHinweis.classList.toggle("sichtbar", istAllerletzteSeite && !animationLaeuft);
   // Der Abschlussbild-Klick ist als Aktion erkennbar.
   if (istAllerletzteSeite) {
     lesemodus.querySelectorAll('.tagebuchbild[src$="tag-30-abschluss.png"]').forEach(img => {
@@ -4549,6 +4555,10 @@ function vorblattern() {
 
   requestAnimationFrame(() => {
     blatt.classList.add("umgeblattert");
+    // Nur beim Umblättern auf die letzte Doppelseite: Hinweis sanft einblenden.
+    if (naechsteSeite === anzahlDoppelseiten() - 1 && freieKapitel() >= eintraege.length) {
+      document.getElementById("letzteSeiteHinweis").classList.add("sichtbar");
+    }
   });
 
   setTimeout(() => {
