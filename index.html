@@ -3759,7 +3759,7 @@ const eintraege = [
       },
       {
         "typ": "bild",
-        "datei": "bilder/esat_final_frau.png",
+        "datei": "bilder/tag-30-abschluss.png",
         "alt": "Hauptbild Tag 30",
         "bildunterschrift": "Das war's, liebes Tagebuch. Aus Esat wurde Esat-chan. 💕🌸"
       }
@@ -4309,7 +4309,7 @@ function seitenAnzeigen() {
   document.getElementById("letzteSeiteHinweis").hidden = !istAllerletzteSeite;
   // Der Abschlussbild-Klick ist als Aktion erkennbar.
   if (istAllerletzteSeite) {
-    lesemodus.querySelectorAll('.tagebuchbild[src$="esat_final_frau.png"]').forEach(img => {
+    lesemodus.querySelectorAll('.tagebuchbild[src$="tag-30-abschluss.png"]').forEach(img => {
       img.title = "Klicken, um das Tagebuch zu schließen";
       img.style.cursor = "pointer";
     });
@@ -4750,7 +4750,7 @@ lesemodus.addEventListener("click", (ereignis) => {
   ereignis.stopPropagation();
   // Das Abschlussbild ist der einzige Auslöser für die Schlussanimation.
   // Bei allen anderen Bildern bleibt die gewohnte Großansicht erhalten.
-  const istLetztesBild = bild.getAttribute("src")?.split("/").pop() === "esat_final_frau.png";
+  const istLetztesBild = bild.getAttribute("src")?.split("/").pop() === "tag-30-abschluss.png.png";
   const istLetzteDoppelseite = aktuelleDoppelseite === anzahlDoppelseiten() - 1;
   if (istLetztesBild && istLetzteDoppelseite && freieKapitel() >= eintraege.length) {
     tagebuchSchliessenAmEnde();
