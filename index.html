@@ -735,7 +735,7 @@ body {
 
     <div class="buchmitte"></div>
 
-    <div id="letzteSeiteHinweis" class="letzte-seite-hinweis" hidden> Du bist am Ende des Tagebuchs angekommen. Klicke auf das letzte Bild, um das Tagebuch zu schließen. </div>
+    <div id="letzteSeiteHinweis" class="letzte-seite-hinweis" hidden>♡ Du bist am Ende des Tagebuchs angekommen. Klicke auf das letzte Bild mit den Frauenhänden, um das Tagebuch zu schließen. ♡</div>
     <div id="leseStartHinweis" class="lese-start-hinweis" hidden>Zum Weiterlesen auf die rechte Seite klicken →</div>
     <div id="infoPflichtHinweis" class="info-pflicht-hinweis" hidden>Bitte zuerst auf das ⓘ klicken →</div>
     <button type="button" id="infoKnopf" class="info-knopf" aria-label="Tipps zum Lesen anzeigen" aria-expanded="false" aria-controls="infoBlase" hidden>i</button>
@@ -801,7 +801,7 @@ body {
  <div class="sperrkarte">
   <svg class="schlosszeichnung" viewBox="0 0 90 100" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 44V28 Q23 8 45 8 Q67 8 66 28V44 M33 44V29 Q33 19 45 19 Q57 19 57 29V44" stroke-width="3"/><path d="M17 43 Q45 39 73 43 L74 88 Q46 94 16 88 Z" stroke-width="3"/><path d="M45 57 Q35 58 41 68 L39 77 L51 77 L49 68 Q55 59 45 57 Z" stroke-width="2"/></svg>
   <h2>Dieses Kapitel ist noch verschlossen</h2>
-  <p id="sperrText">Die Story geht morgen um 20 Uhr weiter.</p>
+  <p id="sperrText">Das nächste Kapitel wird gleich freigeschaltet.</p>
   <button type="button" onclick="sperreSchliessen()">Zurück zum Tagebuch</button>
  </div>
 </div>
@@ -818,7 +818,7 @@ body {
   <video id="schlussvideo" playsinline preload="auto" aria-label="Tagebuch wird geschlossen">
     <source src="endszene.mp4" type="video/mp4">
   </video>
-  <div class="schlussvideo-danke"> Danke fürs Lesen :) </div>
+  <div class="schlussvideo-danke">♡ Danke fürs Lesen ♡</div>
   <button type="button" class="schlussvideo-neustart" onclick="tagebuchNeuStarten()">↻ Noch einmal lesen</button>
 </div>
 
@@ -4169,23 +4169,21 @@ function alleSeitenBerechnen() {
 }
 
 
-/* Freischaltung ab dem ersten Besuch: Kapitel 1 sofort, Kapitel 2 am
-   folgenden Kalendertag um 20 Uhr, weitere Kapitel jeweils täglich um 20 Uhr.
-   Hinweis: rein browserseitige Freischaltung, kein manipulationssicherer Schutz. */
-const START_SCHLUESSEL = "esats-tagebuch-start-v1";
-function startDatum() {
-  let wert;
-  try { wert = localStorage.getItem(START_SCHLUESSEL); } catch(e) {}
-  if (wert && /^\d{4}-\d{2}-\d{2}$/.test(wert)) return wert;
-  const heute = new Date();
-  wert = `${heute.getFullYear()}-${String(heute.getMonth()+1).padStart(2,"0")}-${String(heute.getDate()).padStart(2,"0")}`;
-  try { localStorage.setItem(START_SCHLUESSEL, wert); } catch(e) {}
-  return wert;
+/* TEST: Ein Kapitel pro Minute ab dem ersten Besuch dieses Test-Builds.
+   Tag 1 sofort, Tag 2 nach 1 Minute, ... Tag 30 nach 29 Minuten.
+   Eigener Schluessel, damit der bisherige Tages-Start erhalten bleibt. */
+const MINUTEN_TEST_SCHLUESSEL = "esats-tagebuch-minutentest-start-v1";
+function minutenTestStart() {
+  let gespeichert;
+  try { gespeichert = Number(localStorage.getItem(MINUTEN_TEST_SCHLUESSEL)); } catch(e) {}
+  if (Number.isFinite(gespeichert) && gespeichert > 0) return gespeichert;
+  const jetzt = Date.now();
+  try { localStorage.setItem(MINUTEN_TEST_SCHLUESSEL, String(jetzt)); } catch(e) {}
+  return jetzt;
 }
-const ERSTER_BESUCH = startDatum();
+const MINUTEN_TEST_START = minutenTestStart();
 function freischaltDatum(kapitelIndex) {
-  const [j,m,t] = ERSTER_BESUCH.split("-").map(Number);
-  return new Date(j, m-1, t + kapitelIndex, 20, 0, 0, 0);
+  return new Date(MINUTEN_TEST_START + kapitelIndex * 60 * 1000);
 }
 /* Lokaler Testmodus: Aktivierung nur ueber Passwortdialog auf der Startseite.
    Achtung: Clientseitiges Passwort ist im Seitenquelltext einsehbar. */
@@ -4232,10 +4230,8 @@ function freieKapitel() {
 function naechsteFreischaltung() {
   const frei = freieKapitel();
   if (frei >= eintraege.length) return "Alle Kapitel sind freigeschaltet.";
-  const datum = freischaltDatum(frei);
-  const morgen = new Date(); morgen.setDate(morgen.getDate()+1);
-  const istMorgen = datum.toDateString() === morgen.toDateString();
-  return `Die Story ist ${istMorgen ? "morgen" : "am " + datum.toLocaleDateString("de-DE")} um 20 Uhr verfügbar.`;
+  const sekunden = Math.max(0, Math.ceil((freischaltDatum(frei).getTime() - Date.now()) / 1000));
+  return `Das nächste Kapitel wird in ${Math.floor(sekunden / 60)} Min. ${String(sekunden % 60).padStart(2, "0")} Sek. freigeschaltet.`;
 }
 function schlossSVG() {
  return `<svg class="schlosszeichnung" viewBox="0 0 90 100" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 44V28 Q23 8 45 8 Q67 8 66 28V44 M33 44V29 Q33 19 45 19 Q57 19 57 29V44" stroke-width="3"/><path d="M17 43 Q45 39 73 43 L74 88 Q46 94 16 88 Z" stroke-width="3"/><path d="M45 57 Q35 58 41 68 L39 77 L51 77 L49 68 Q55 59 45 57 Z" stroke-width="2"/></svg>`;
@@ -4739,7 +4735,7 @@ setInterval(() => {
   if (!animationLaeuft && lesemodus.classList.contains("aktiv")) {
     seitenAnzeigen(); kapitelRegisterFuellen();
   }
-}, 60000);
+}, 5000);
 
 document.addEventListener("keydown", event => {
   if (event.key === "Escape" && document.getElementById("sperrHinweis").classList.contains("offen")) { sperreSchliessen(); return; }
