@@ -9,7 +9,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 STATUS = Path("kapitel-status.json")
-EMPFAENGER = "sametsapmaz6161@gmail.com"
+EMPFAENGER = "Esat.sapmaz@yahoo.de"
 URL = "https://sametsapmaz6161-droid.github.io/esats-tagebuch-webseite/"
 KAPITEL = 30
 BERLIN = ZoneInfo("Europe/Berlin")
