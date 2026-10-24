@@ -4169,21 +4169,29 @@ function alleSeitenBerechnen() {
 }
 
 
-/* TEST: Ein Kapitel pro Minute ab dem ersten Besuch dieses Test-Builds.
-   Tag 1 sofort, Tag 2 nach 1 Minute, ... Tag 30 nach 29 Minuten.
-   Eigener Schluessel, damit der bisherige Tages-Start erhalten bleibt. */
-const MINUTEN_TEST_SCHLUESSEL = "esats-tagebuch-minutentest-start-v1";
-function minutenTestStart() {
-  let gespeichert;
-  try { gespeichert = Number(localStorage.getItem(MINUTEN_TEST_SCHLUESSEL)); } catch(e) {}
-  if (Number.isFinite(gespeichert) && gespeichert > 0) return gespeichert;
-  const jetzt = Date.now();
-  try { localStorage.setItem(MINUTEN_TEST_SCHLUESSEL, String(jetzt)); } catch(e) {}
-  return jetzt;
+/* Gemeinsamer Startzeitpunkt: Wird beim Veröffentlichen durch GitHub Actions
+   in kapitel-status.json geschrieben. Kein individueller Browser-Start mehr. */
+let gemeinsamerStart = null;
+async function kapitelStatusLaden() {
+  try {
+    const antwort = await fetch("kapitel-status.json?zeit=" + Date.now(), { cache: "no-store" });
+    if (!antwort.ok) throw new Error("Status nicht verfügbar");
+    const status = await antwort.json();
+    const zeit = Date.parse(status.start_at);
+    if (!Number.isFinite(zeit)) throw new Error("Ungültiger Startzeitpunkt");
+    gemeinsamerStart = zeit;
+    if (seiten.length && !animationLaeuft && lesemodus.classList.contains("aktiv")) {
+      seitenAnzeigen();
+      kapitelRegisterFuellen();
+    }
+  } catch (fehler) {
+    console.warn("Kapitel-Startzeitpunkt konnte nicht geladen werden:", fehler);
+  }
 }
-const MINUTEN_TEST_START = minutenTestStart();
+kapitelStatusLaden();
+setInterval(kapitelStatusLaden, 15000);
 function freischaltDatum(kapitelIndex) {
-  return new Date(MINUTEN_TEST_START + kapitelIndex * 60 * 1000);
+  return new Date((gemeinsamerStart ?? Number.MAX_SAFE_INTEGER) + kapitelIndex * 60000);
 }
 /* Lokaler Testmodus: Aktivierung nur ueber Passwortdialog auf der Startseite.
    Achtung: Clientseitiges Passwort ist im Seitenquelltext einsehbar. */
@@ -4223,12 +4231,14 @@ document.getElementById("testForm").addEventListener("submit", e => {
 document.addEventListener("keydown", e => { if (e.key === "Escape" && testDialog.classList.contains("offen")) testDialogSchliessen(); });
 function freieKapitel() {
   if (testmodusAktiv()) return eintraege.length;
+  if (gemeinsamerStart === null) return 0;
   let frei = 1;
   while (frei < eintraege.length && Date.now() >= freischaltDatum(frei).getTime()) frei++;
   return frei;
 }
 function naechsteFreischaltung() {
   const frei = freieKapitel();
+  if (gemeinsamerStart === null) return "Der gemeinsame Freischaltzeitpunkt wird geladen …";
   if (frei >= eintraege.length) return "Alle Kapitel sind freigeschaltet.";
   const sekunden = Math.max(0, Math.ceil((freischaltDatum(frei).getTime() - Date.now()) / 1000));
   return `Das nächste Kapitel wird in ${Math.floor(sekunden / 60)} Min. ${String(sekunden % 60).padStart(2, "0")} Sek. freigeschaltet.`;
