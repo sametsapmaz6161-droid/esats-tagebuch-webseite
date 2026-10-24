@@ -32,7 +32,8 @@ def jetzt():
     return datetime.now(timezone.utc)
 
 
-if os.environ.get("EVENT_NAME") == "push":
+
+if os.environ.get("EVENT_NAME") == "push" or os.environ.get("RESET_KAPITEL") == "true":
     # Der Zeitpunkt der Bereitstellung des neuen Kapitelplans ist die Startmarke.
     status = {"start_at": jetzt().isoformat().replace("+00:00", "Z"), "last_notified": 1}
     speichern(status, "Kapitel-Freischaltung starten [skip ci]")
