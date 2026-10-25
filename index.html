@@ -245,7 +245,7 @@ body {
   width: auto;
   height: auto;
   max-width: 100%;
-  max-height: 360px;
+  max-height: 420px;
   object-fit: contain;
   margin: 12px auto 20px;
   border-radius: 4px;
@@ -430,7 +430,7 @@ body {
   }
 
   .tagebuchbild {
-    max-height: 190px;
+    max-height: 220px;
   }
 
   .steuerung button {
@@ -3904,10 +3904,10 @@ function blockHTML(block, bildFaktor = 1) {
     const platz = messinhalt.clientWidth -
       (parseFloat(stil.paddingLeft) || 0) -
       (parseFloat(stil.paddingRight) || 0);
-    const maximalHoehe = window.innerWidth <= 650 ? 190 : 360;
+    const maximalHoehe = window.innerWidth <= 650 ? 220 : 420;
     let dimensionen = "";
     if (groesse && groesse.breite > 0 && groesse.hoehe > 0) {
-      const faktor = Math.min(1.6, platz / groesse.breite, maximalHoehe / groesse.hoehe) * bildFaktor;
+      const faktor = Math.min(platz / groesse.breite, maximalHoehe / groesse.hoehe) * bildFaktor;
       const breite = Math.floor(groesse.breite * faktor);
       const hoehe = Math.floor(groesse.hoehe * faktor);
       dimensionen = `width="${breite}" height="${hoehe}" style="width:${breite}px;height:${hoehe}px"`;
