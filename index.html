@@ -870,6 +870,11 @@ let aktuelleDoppelseite = 0;
 let animationLaeuft = false;
 let seiten = [];
 const bildDimensionen = new Map();
+// Versionsnummer erhoehen, wenn Tagebuchbilder ausgetauscht werden.
+const BILD_VERSION = "20261025-1";
+function bildUrl(datei) {
+  return datei + (datei.includes("?") ? "&" : "?") + "v=" + BILD_VERSION;
+}
 
 /*
   TAGEBUCHEINTRÄGE
@@ -3890,7 +3895,7 @@ function blockHTML(block, bildFaktor = 1) {
     </div>`;
   }
   if (block.typ === "bild") {
-    const quelle = htmlSicher(block.datei);
+    const quelle = htmlSicher(bildUrl(block.datei));
     const alt = htmlSicher(block.alt || "");
     const groesse = bildDimensionen.get(block.datei);
     // Explizite Pixelabmessungen machen die Seitenmessung deterministisch.
@@ -4388,7 +4393,7 @@ function seitenAnzeigen() {
   abschlussHinweis.classList.toggle("sichtbar", istAllerletzteSeite && !animationLaeuft);
   // Der Abschlussbild-Klick ist als Aktion erkennbar.
   if (istAllerletzteSeite) {
-    lesemodus.querySelectorAll('.tagebuchbild[src$="tag-30-abschluss.png"]').forEach(img => {
+    lesemodus.querySelectorAll('.tagebuchbild[src*="tag-30-abschluss.png"]').forEach(img => {
       img.title = "Klicken, um das Tagebuch zu schließen";
       img.style.cursor = "pointer";
     });
@@ -4441,7 +4446,7 @@ async function bilderVorladen() {
         };
         bild.onerror = resolve;
 
-        bild.src = datei;
+        bild.src = bildUrl(datei);
 
         if (bild.complete && bild.naturalWidth > 0) {
           bild.onload();
