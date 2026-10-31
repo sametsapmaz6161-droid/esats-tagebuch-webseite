@@ -790,6 +790,7 @@ body {
 <div id="videoOverlay" class="video-overlay" role="dialog" aria-modal="true" aria-label="Tagebuchvideo" aria-hidden="true">
   <button type="button" id="videoOverlaySchliessen" class="video-overlay-schliessen" aria-label="Video schließen">×</button>
   <div class="video-overlay-inhalt">
+    <video id="videoDatei" controls playsinline preload="metadata" style="display:none;width:100%;max-height:75dvh;border-radius:8px;background:#000;"></video>
     <iframe id="videoFrame" title="Tagebuchvideo" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
     <p id="videoOverlayText"></p>
     <a id="videoOriginalLink" href="#" target="_blank" rel="noopener noreferrer" style="font-size:12px; opacity:0.75;">Falls das Video nicht lädt, hier klicken</a>
@@ -3817,7 +3818,7 @@ const zusatzvideos = {
   "8": [
     {
       "nach_text": "Jessica fing an zu lachen.",
-      "video": "https://drive.google.com/file/d/1pCeHZujrT7ErH2NGvtmjz49x7EV2s0zK/view?usp=sharing",
+      "video": "videos/tag-08-video.mp4",
       "beschriftung": "Nicht mal beim Küssen haben wir Ruhe vor ihren Kaninchen."
     }
   ],
@@ -4865,14 +4866,30 @@ document.addEventListener("keydown", (ereignis) => {
 /* VIDEO-GROSSANSICHT */
 const videoOverlay = document.getElementById("videoOverlay");
 const videoFrame = document.getElementById("videoFrame");
+const videoDatei = document.getElementById("videoDatei");
 const videoOverlayText = document.getElementById("videoOverlayText");
 const videoOriginalLink = document.getElementById("videoOriginalLink");
 const videoOverlaySchliessen = document.getElementById("videoOverlaySchliessen");
 function videoGrossOeffnen(kasten) {
   const url = kasten.dataset.video;
   const id = url.match(/drive\.google\.com\/file\/d\/([^/]+)/)?.[1];
-  if (!id) { window.open(url, "_blank", "noopener"); return; }
-  videoFrame.src = `https://drive.google.com/file/d/${encodeURIComponent(id)}/preview`;
+  if (id) {
+    videoDatei.pause();
+    videoDatei.removeAttribute("src");
+    videoDatei.style.display = "none";
+    videoFrame.style.display = "block";
+    videoFrame.src = `https://drive.google.com/file/d/${encodeURIComponent(id)}/preview`;
+  } else if (/\.mp4(?:[?#]|$)/i.test(url)) {
+    videoFrame.removeAttribute("src");
+    videoFrame.style.display = "none";
+    videoDatei.style.display = "block";
+    videoDatei.src = url;
+    videoDatei.load();
+    videoDatei.play().catch(() => {});
+  } else {
+    window.open(url, "_blank", "noopener");
+    return;
+  }
   videoOriginalLink.href = url;
   videoOverlayText.textContent = kasten.dataset.beschriftung || "";
   videoOverlay.classList.add("offen");
@@ -4883,6 +4900,9 @@ function videoGrossSchliessen() {
   videoOverlay.classList.remove("offen");
   videoOverlay.setAttribute("aria-hidden", "true");
   videoFrame.removeAttribute("src"); // stoppt die Wiedergabe
+  videoDatei.pause();
+  videoDatei.removeAttribute("src");
+  videoDatei.load();
 }
 videoOverlaySchliessen.addEventListener("click", videoGrossSchliessen);
 videoOverlay.addEventListener("click", event => {
