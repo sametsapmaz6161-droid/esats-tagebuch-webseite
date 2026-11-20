@@ -4956,15 +4956,76 @@ function tagebuchSchliessenAmEnde() {
   }
 }
 
+const cinematicVideos = [
+  "cinematic-1.mp4",
+  "cinematic-2.mp4"
+];
+
+const spielUrl = "https://sametsapmaz6161-droid.github.io/esat-jump-n-love-public/";
+
+let cinematicIndex = 0;
+
+function naechstesCinematic() {
+  if (cinematicIndex >= cinematicVideos.length) {
+    window.location.href = spielUrl;
+    return;
+  }
+
+  schlussvideo.src = cinematicVideos[cinematicIndex];
+  cinematicIndex++;
+
+  schlussvideo.load();
+  schlussvideo.muted = false;
+
+  const versuch = schlussvideo.play();
+
+  if (versuch && typeof versuch.catch === "function") {
+    versuch.catch(() => {
+      schlussvideo.muted = true;
+      schlussvideo.play().catch(() => {
+        schlussvideoSzene.classList.add("beendet");
+      });
+    });
+  }
+}
+
 schlussvideo.addEventListener("ended", () => {
-  // Video bleibt auf dem letzten Bild stehen, kein Zurückspringen.
-  schlussvideoSzene.classList.add("beendet");
-});
-schlussvideo.addEventListener("error", () => {
-  schlussvideoSzene.classList.add("beendet");
+  // Nach Cinematic 1: 3 Sekunden Schwarzbild
+  if (cinematicIndex === 1) {
+    schlussvideo.style.opacity = "0";
+    schlussvideo.style.transition = "none";
+
+    setTimeout(() => {
+      // Cinematic 2 zunächst unsichtbar starten
+      schlussvideo.style.opacity = "0";
+      schlussvideo.style.transition = "none";
+
+      naechstesCinematic();
+
+      // Anschließend über 2 Sekunden einblenden
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          schlussvideo.style.transition = "opacity 2s ease-in-out";
+          schlussvideo.style.opacity = "1";
+        });
+      });
+    }, 3000);
+
+    return;
+  }
+
+  naechstesCinematic();
 });
 
+schlussvideo.addEventListener("error", () => {
+  console.error("Video konnte nicht geladen werden:", schlussvideo.currentSrc);
+  schlussvideoSzene.classList.add("beendet");
+});
 function tagebuchNeuStarten() {
+  cinematicIndex = 0;
+  schlussvideo.pause();
+  schlussvideo.removeAttribute("src");
+  schlussvideo.load();
   schlussvideo.pause();
   schlussvideo.currentTime = 0;
   schlussLaeuft = false;
