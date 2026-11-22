@@ -4209,8 +4209,8 @@ function berlinTeile(datum) {
   }).formatToParts(datum);
   return Object.fromEntries(teile.filter(teil => teil.type !== "literal").map(teil => [teil.type, Number(teil.value)]));
 }
-function berlinUhrzeitUTC(jahr, monat, tag) {
-  const ziel = Date.UTC(jahr, monat - 1, tag, 20, 0, 0);
+function berlinUhrzeitUTC(jahr, monat, tag, stunde = 20) {
+  const ziel = Date.UTC(jahr, monat - 1, tag, stunde, 0, 0);
   let utc = ziel - 3600000;
   for (let versuch = 0; versuch < 3; versuch++) {
     const lokal = berlinTeile(new Date(utc));
@@ -4223,7 +4223,15 @@ function freischaltDatum(kapitelIndex) {
   if (gemeinsamerStart === null) return new Date(8640000000000000);
   const start = berlinTeile(new Date(gemeinsamerStart));
   const kalendertag = new Date(Date.UTC(start.year, start.month - 1, start.day + kapitelIndex));
-  return new Date(berlinUhrzeitUTC(kalendertag.getUTCFullYear(), kalendertag.getUTCMonth() + 1, kalendertag.getUTCDate()));
+    // ESAT_KAPITEL30_18UHR_V1
+  // Kapitel 30 (Index 29) wird um 18:00 Uhr freigeschaltet.
+  const stunde = kapitelIndex === 29 ? 18 : 20;
+  return new Date(berlinUhrzeitUTC(
+    kalendertag.getUTCFullYear(),
+    kalendertag.getUTCMonth() + 1,
+    kalendertag.getUTCDate(),
+    stunde
+  ));
 }
 /* Lokaler Testmodus: Aktivierung nur ueber Passwortdialog auf der Startseite.
    Achtung: Clientseitiges Passwort ist im Seitenquelltext einsehbar. */
